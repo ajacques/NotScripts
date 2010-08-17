@@ -1,0 +1,93 @@
+<html>
+<head>
+<script src="common/port.js"></script>
+<script src="CHANGE__PASSWORD__HERE.js"></script>
+<script src="common/common.js"></script>
+<script src="common/config.js"></script>
+<script src="background.js"></script>
+
+<script type = "text/javascript">
+	
+	var firstLoad = false;
+	if (config.get('currVersion') <= 0)
+		firstLoad = true;
+		
+	if (config.get('currVersion') < 9000)
+	{	
+		config.set('currVersion', 9000);
+		config.set('currDisplayVersion', "0.9.0");
+	}
+	
+	if (firstLoad || !isPasswordGood())
+	{
+		showOptionsPage();
+		//chrome.tabs.create({"url": chrome.extension.getURL("CHANGE__PASSWORD__HERE.js")});
+	}	
+	
+	config.set('globalAllowAll', false);
+
+	const maxBlinks = 6;
+	var lastAnimatedTab = null;	
+	var animationTimer = null;
+	
+	if (SAFARI)
+	{
+		safari.application.addEventListener("validate", validateCommand, false);
+		safari.application.addEventListener("command", performCommand, false);
+
+		//safari.application.addEventListener("message", handleMessage, false);	
+		for (var i = 0; i < safari.application.browserWindows.length; i++)
+		{
+			var currWindow = safari.application.browserWindows[i];
+			for (var j = 0; j < currWindow.tabs.length; j++)
+			{
+				currWindow.tabs[j].url = currWindow.tabs[j].url;
+			}			
+		}		
+	}
+	else
+	{
+		chrome.tabs.onUpdated.addListener(function(tabid, changeinfo, tab) {
+			// Do I really need to cancel the animation here?
+			if (animationTimer && tab.id === lastAnimatedTab)
+			{
+				clearTimeout(animationTimer);
+				lastAnimatedTab = null;
+				animationTimer = null;				
+			}
+			if (config.get('showPageActionButton'))
+			{	
+				/*
+				if (urlsGloballyAllowed || isAllowed(tab.url))
+				{
+					chrome.pageAction.setIcon({path: "IconAllowed.png", tabId: tab.id});
+				}
+				else
+				{
+					chrome.pageAction.setIcon({path: "IconForbidden.png", tabId: tab.id});
+				}
+				chrome.pageAction.show(tab.id);
+				*/
+				chrome.pageAction.setIcon({path: "IconForbidden.png", tabId: tab.id});
+				chrome.pageAction.show(tab.id);
+				chrome.tabs.sendRequest(tab.id, {type: "get sources for top window"}, function(response){
+					if (response.pageSourcesAllowed.length > 0 || response.enabled)
+						chrome.pageAction.setIcon({path: "IconAllowed.png", tabId: tab.id});
+					else
+						chrome.pageAction.setIcon({path: "IconForbidden.png", tabId: tab.id});	
+					chrome.pageAction.show(tab.id);
+				});				
+			}
+			else
+			{
+				chrome.pageAction.hide(tab.id);
+			}
+		});	
+				
+	}
+		
+</script>
+</head>
+</html>
+
+

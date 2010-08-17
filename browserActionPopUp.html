@@ -1,0 +1,580 @@
+<html>
+<head>
+	<script src="common/port.js"></script>
+	<script src="CHANGE__PASSWORD__HERE.js"></script>
+	<script src="common/common.js"></script>
+	<script src="common/config.js"></script>
+
+	<!--
+	<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+	-->
+
+		<title>Extension Action</title> 
+		<style> 	
+			div.wrapper {
+				width:302px;
+				margin:0px 0px 0px 2px;
+				padding:2px 0px;
+				background: #EEE;
+				display:none;
+				overflow:auto;
+				-moz-border-radius:5px;
+				-webkit-border-radius:5px;
+				-o-border-radius:5px;
+				border-radius:5px;
+			}			
+			div.wrapperPriority {
+				width:302px;
+				margin:0px 0px 0px 0px;
+				padding:2px 2px;
+				background: red;
+				display:none;
+				-moz-border-radius:5px;
+				-webkit-border-radius:5px;
+				-o-border-radius:5px;
+				border-radius:5px;				
+			}
+
+			#wrapperStatus {
+				width:300px;
+				margin:0px auto;
+				padding:2px 0px;
+				background: #f5f5f5;
+				display:none;
+			}
+			
+			#wrapperLinks {
+				width:300px;
+				margin:0px auto;
+				padding:5px 0px;
+				background: #f5f5f5;
+			}
+
+			#bottomLinks {
+				font-family: 'Arial', arial, serif;
+				font-size:12px;
+				color:#000;
+				text-decoration:none;
+				text-align:center;
+			}			
+
+			div.wrapperSpacer {
+				width:310px;
+				height:15px;
+				margin:0px auto;
+				padding:5px 0px;
+				background: #f5f5f5;
+				display:none;
+			}			
+
+			#status {
+				font-family: 'Arial', arial, serif;
+				font-size:12px;
+				color:#000;
+				text-decoration:none;
+				text-align:center;
+			}			
+ 
+			#footer {
+				text-align:center;
+			}
+ 
+			#footer, #footer a {
+				color:#ccc;
+			}
+ 
+			h1, h2, p, a {
+				font-family: 'Arial', arial, serif;
+				line-height:1.5;
+			}
+ 
+			h1 {
+				margin:0 0 10px 0;
+				letter-spacing:1px;
+			}
+ 
+			h2 {
+				margin:20px 0 5px 0;
+				font-size:20px;
+			}
+ 
+			body {
+				background:#f5f5f5;
+				overflow: auto;
+				overflow-x: hidden;
+				overflow-y: scroll;
+				padding-top:0px;
+				padding-bottom:5px;
+				padding-right:15px;
+				padding-left:5px;			
+			}
+		</style> 
+		<style> 		
+			div.button {
+				font-family: 'Arial', arial, serif;
+				font-size:16px;
+				color:#000;
+				text-decoration:none;
+				
+				cursor: pointer;
+				
+				width:290px;
+				padding:10px 5px;
+				border:1px solid #DDD;
+				text-align:center;
+				
+				white-space: wrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				
+                display:block;
+				-moz-border-radius:5px;
+				-webkit-border-radius:5px;
+				-o-border-radius:5px;
+				border-radius:5px;
+ 
+				background:#FFFFFF;
+				background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#FFFFFF), to(#EEE));
+				background:-moz-linear-gradient(0% 90% 90deg, #EEE, #FFF);
+ 
+				-webkit-transition: all .4s ease-in-out;
+				-moz-transition: all .4s ease-in-out;
+				-o-transition: all .4s ease-in-out;
+				transition: all .4s ease-in-out;
+			}
+			div.button:hover {
+				color:#fff;
+				border-color:#3278BE;
+ 
+				background:#4195DD;
+				background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#4195DD), to(#003C82));
+				background:-moz-linear-gradient(0% 90% 90deg, #003C82, #4195DD);
+			}
+			div.button:active {
+				background:#4195DD;
+				background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#003C82), to(#4195DD));
+				background:-moz-linear-gradient(0% 90% 90deg, #4195DD, #003C82);
+			}
+			div.button.notransitions {
+				-webkit-transition: none;
+				-moz-transition: none;
+				-o-transition: none;
+				transition: none;
+			}		
+		</style> 
+		<style> 
+			div.ubutton {
+				font-family: 'Arial', arial, serif;
+				font-size:12px;
+				color:#000;
+				text-decoration:none;
+				
+				cursor: pointer;
+				
+				width:290px;
+				padding:5px 5px;
+				border:1px solid #DDD;
+				text-align:center;
+				
+				white-space: wrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				
+                display:block;
+				-moz-border-radius:5px;
+				-webkit-border-radius:5px;
+				-o-border-radius:5px;
+				border-radius:5px;
+ 
+				background:#FFFFFF;
+				background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#FFFFFF), to(#EEE));
+				background:-moz-linear-gradient(0% 90% 90deg, #EEE, #FFF);
+ 
+				-webkit-transition: all .4s ease-in-out;
+				-moz-transition: all .4s ease-in-out;
+				-o-transition: all .4s ease-in-out;
+				transition: all .4s ease-in-out;
+			}
+			div.ubutton:hover {
+				color:#fff;
+				border-color:#3278BE;
+ 
+				background:#4195DD;
+				background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#4195DD), to(#003C82));
+				background:-moz-linear-gradient(0% 90% 90deg, #003C82, #4195DD);
+			}
+			div.ubutton:active {
+				background:#4195DD;
+				background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#003C82), to(#4195DD));
+				background:-moz-linear-gradient(0% 90% 90deg, #4195DD, #003C82);
+			}
+			div.ubutton.notransitions {
+				-webkit-transition: none;
+				-moz-transition: none;
+				-o-transition: none;
+				transition: none;
+			}		
+		</style> 		
+</head>
+<body>
+
+<div id="wrapperStatus">
+	<div id="status">Loading....</div>
+</div> 
+
+<div class="wrapperPriority">
+	<div onclick="chrome.extension.getBackgroundPage().showOptionsPage(); window.close();" id="passwordBad" name="passwordBad" class="button notransitions"><font size='6' color='red'>( ! ) </font><br/><br/>No password set for NotScripts.<br/>Will default deny scripts until changed.<br/><br/>Click for instructions.</div>  		
+</div> 	
+
+<div class="wrapperPriority">
+	<div onclick="" id="fatalError" name="fatalError" class="button notransitions"></div>  		
+</div> 	
+
+<div id="wrapperSpacerTop" class="wrapperSpacer"><hr/></div> 
+
+<div id="wrapperSpacerBottom" class="wrapperSpacer"><hr/></div> 
+
+<!--
+<div class="wrapper">
+	<div onclick="" id="tempAllowThisSite" name="tempAllowThisSite" class="button notransitions"></div>  		
+</div>
+-->
+
+<div class="wrapper" id="toggleOnOffWrapper">
+	<div onclick="" id="toggleOnOff" name="toggleOnOff" class="button notransitions"></div>  		
+</div> 
+
+<div id="wrapperLinks">
+	<div id="bottomLinks">
+		<a href="#" onclick="chrome.extension.getBackgroundPage().showOptionsPage(); window.close();">Options</a>
+		<a href="#" onclick="chrome.tabs.create({'url': 'http://www.optimalcycling.com'}); window.close();" style="padding-left:3px">Home</a>
+	</div>
+</div>
+
+
+
+
+<script type = "text/javascript">
+
+var coreWebsiteAddress = null;
+var currTabId = null;
+var statusDiv = document.getElementById("status");
+
+var fatalErrorDiv = document.getElementById("fatalError");
+var fatalErrorWrapper = fatalErrorDiv.parentNode;
+
+// Not used
+//var tempAllowThisSiteDiv = document.getElementById("tempAllowThisSite");
+//var tempAllowThisSiteDivWrapper = tempAllowThisSiteDiv.parentNode;
+
+var toggleOnOffDiv = document.getElementById("toggleOnOff");
+var toggleOnOffDivWrapper = toggleOnOffDiv.parentNode;
+
+var passwordBadDiv = document.getElementById("passwordBad");
+var passwordBadDivWrapper = passwordBadDiv.parentNode;
+
+var spacerBottomDiv = document.getElementById("wrapperSpacerBottom");
+var spacerTopDiv = document.getElementById("wrapperSpacerTop");
+
+var encounteredError = false;
+var arrayOfButtons = new Array();
+
+if (!ENCRYPTION_PASSWORD)
+{
+	statusDiv.innerHTML = "Default Deny";
+	passwordBadDivWrapper.style.display = "block";
+}
+else
+{
+	//spacerTopDiv.style.display = "block";
+	spacerBottomDiv.style.display = "block";
+	
+	chrome.extension.onRequest.addListener(function(msg, src, send) {
+		if (msg.type === "get sources response")
+		{	
+			//chrome.extension.getBackgroundPage().console.log("sources from iframe");
+			showLastBlocked(msg);
+			send({});
+		}
+		else
+		{
+			send({});
+		}
+	});
+
+	chrome.tabs.getSelected(null, 
+		function(tab)
+		{	
+			currTabId = tab.id;				
+			coreWebsiteAddress = getMainURL(tab.url);
+
+			if (coreWebsiteAddress)
+			{			
+				chrome.tabs.sendRequest(tab.id, {type: "get sources"}, showLastBlocked);
+			}
+			else	// something wrong with the url
+			{
+				statusDiv.innerHTML = "Unknown or N/A URL";
+			}				
+		}
+	);
+}
+
+function showLastBlocked(response)
+{
+	const maxLines = 2;
+		
+	//if (encounteredError)
+		//return;
+		
+	if (response.fatalError)
+	{
+		//chrome.extension.getBackgroundPage().console.error("HTML5 memory storage decryption/storage error " + encodeURI(response.url));
+		encounteredError = true;
+
+		var theMessage = "";
+		
+		if (response.url)
+		{
+			var currBlockedURL = encodeURI(response.url.trim());
+
+			var urlChunks = currBlockedURL.chunk(45);		
+			if (urlChunks)
+			{
+				for (var j = 0; j < maxLines && j < urlChunks.length; j++)
+				{
+					theMessage += (urlChunks[j] + "<br/>");
+				}
+				
+				if (urlChunks.length > maxLines)
+				{
+					var lastChunk = urlChunks[maxLines].chunk(35);
+					theMessage += (lastChunk[0] + "......<br/>");
+				}
+			}
+		}
+					
+		fatalErrorDiv.innerHTML = "<font size='6' color='red'>( ! ) </font><br/><br/>NotScripts encountered invalid encryption for this site's settings / Exceeded storage quota on<br/><i>" + theMessage + "</i><br/>Click here to reload the current web page to try again.<br/><br/>Otherwise, please clear/enable the browser HTML5 storage.";
+		fatalErrorDiv.onclick=function() { chrome.tabs.executeScript(currTabId, {code:'window.location.reload();'}); window.close();}
+		fatalErrorWrapper.style.display = "block";
+		spacerTopDiv.style.display = "block";
+
+		//for (var i = 0; i < arrayOfButtons.length; i++)
+			//arrayOfButtons[i].style.display = "block";
+		
+		statusDiv.innerHTML = "Error!";
+		
+		//return;
+	}
+
+	// Toggling on/off
+	if (response.enabled)
+	{
+		if (toggleOnOffDiv.innerHTML !== "Revoke All Temporary")
+		{
+			statusDiv.innerHTML = "All Scripts Temporarily Allowed on New Page Loads";
+			toggleOnOffDiv.innerHTML = "Revoke All Temporary";
+			toggleOnOffDivWrapper.style.display = "block";
+			//$(toggleOnOffDivWrapper).slideDown("fast");
+			toggleOnOffDiv.onclick = function(){toggleOnOff(false);};
+		}
+	}
+	else
+	{
+		if (response.pageSourcesAllowed.length > 0)
+			statusDiv.innerHTML = "Some Scripts Allowed on Site";
+		else if (statusDiv.innerHTML !== "Some Scripts Allowed on Site")
+			statusDiv.innerHTML = "Scripts Not Allowed / Inline Only";
+				
+		if (toggleOnOffDiv.innerHTML !== "Revoke All Temporary" && toggleOnOffDiv.innerHTML !== "Temporarily Allow All Globally")
+		{
+			toggleOnOffDiv.innerHTML = "Globally Allow All Temporarily";
+			toggleOnOffDivWrapper.style.display = "block";
+			//$(toggleOnOffDivWrapper).slideDown("fast");
+			toggleOnOffDiv.onclick = function(){toggleOnOff(true);};
+		}
+
+		if (response.pageSourcesAllowed)
+		{
+			for (var i = 0; i < response.pageSourcesAllowed.length; i++)
+			{
+				var currBlockedURL = response.pageSourcesAllowed[i];
+				
+				if (currBlockedURL)
+				{						
+					currBlockedURL = encodeURI(currBlockedURL.trim());
+
+					var urlChunks = currBlockedURL.chunk(45);
+					var theMessage = "";
+
+					if (urlChunks)
+					{
+						for (var j = 0; j < maxLines && j < urlChunks.length; j++)
+						{
+							theMessage += (urlChunks[j] + "<br/>");
+						}
+						
+						if (urlChunks.length > maxLines)
+						{
+							var lastChunk = urlChunks[maxLines].chunk(35);
+							theMessage += (lastChunk[0] + "......<br/>");
+						}
+					}
+
+					var aDivWrapper = document.createElement("div");
+					aDivWrapper.className = "wrapper";
+					
+					var aBlockedDiv = document.createElement("div");
+					aBlockedDiv.className = "ubutton notransitions";
+					
+					aBlockedDiv.innerHTML = "<b><font size='3' color='red'>( X ) </font> Forbid Scripts From</b><br/><i>" + theMessage + "</i>";
+					aDivWrapper.style.display = "block";
+					aDivWrapper.setAttribute("data-url", currBlockedURL);
+					
+					aDivWrapper.onclick = function(){removeSite(this.getAttribute("data-url"));};			
+					
+					aDivWrapper.appendChild(aBlockedDiv);
+					spacerBottomDiv.parentNode.insertBefore(aDivWrapper,spacerBottomDiv);
+					
+					/*if (encounteredError)
+					{
+						aDivWrapper.style.display = "block";
+						break;
+					}*/				
+				}
+			}
+		}
+		
+		
+		if (response.pageSourcesForbidden)
+		{
+			for (var i = 0; i < response.pageSourcesForbidden.length; i++)
+			{
+				var currBlockedURL = response.pageSourcesForbidden[i];
+
+				if (currBlockedURL)
+				{		
+					currBlockedURL = encodeURI(currBlockedURL.trim());
+					
+					var urlChunks = currBlockedURL.chunk(45);
+					var theMessage = "";
+					
+					if (urlChunks)
+					{
+						for (var j = 0; j < maxLines && j < urlChunks.length; j++)
+						{
+							theMessage += (urlChunks[j] + "<br/>");
+						}
+						
+						if (urlChunks.length > maxLines)
+						{
+							var lastChunk = urlChunks[maxLines].chunk(35);
+							theMessage += (lastChunk[0] + "......<br/>");
+						}
+					}
+
+					var aDivWrapper = document.createElement("div");
+					aDivWrapper.className = "wrapper";
+					
+					var aBlockedDiv = document.createElement("div");
+					aBlockedDiv.className = "ubutton notransitions";
+					
+					aBlockedDiv.innerHTML = "<b><font size='3' color='green'>( + ) </font> Allow Scripts From</b><br/><i>" + theMessage + "</i>";
+					aDivWrapper.style.display = "block";
+					
+
+					aDivWrapper.setAttribute("data-url", currBlockedURL);
+					
+					aDivWrapper.onclick = function(){addSite(this.getAttribute("data-url"));};			
+					
+					aDivWrapper.appendChild(aBlockedDiv);
+					spacerBottomDiv.parentNode.insertBefore(aDivWrapper,spacerBottomDiv);
+					
+					/*if (encounteredError)
+					{
+						aDivWrapper.style.display = "block";
+						break;
+					}*/					
+				}
+			}
+		}		
+	}
+		
+}
+
+function removeSite(url) {
+	//if (isAllowed(url))
+		revokeUrl(url);
+	
+	//updateAllTabs(true);	
+	updateCurrentTab(false);
+}
+
+function addSite(url) {
+	if (!isAllowed(url))
+		permitUrl(url);
+	
+	//updateAllTabs(true);
+
+	if (SAFARI)
+		updateCurrentTab(true);
+	else
+		updateCurrentTab(false);
+}
+
+function toggleOnOff(newState) {	
+	config.set('globalAllowAll', newState);
+	
+	if (SAFARI)
+		updateAllTabs(true);
+	else
+		updateAllTabs(false);
+}
+
+function updateCurrentTab(refreshLists)
+{
+	if (refreshLists)
+		whitelist = config.get('whitelist');
+		
+	chrome.tabs.sendRequest(currTabId, {type: "update settings", "enabled": config.get('globalAllowAll'), 
+		"whitelist": whitelist, "reload": config.get('reloadCurrentTabOnToggle')});	
+	window.close();		
+}
+
+function updateAllTabs(refreshLists) {
+	chrome.windows.getAll({populate: true}, function(windowsArray) {
+		urlsGloballyAllowed = config.get('globalAllowAll');
+		
+		if (refreshLists)
+			whitelist = config.get('whitelist');	
+		var shouldReload = config.get('reloadCurrentTabOnToggle');
+		for (var i = 0; i < windowsArray.length; i++)
+		{
+			var currWindow = windowsArray[i];
+			for (var j = 0; j < currWindow.tabs.length; j++)
+			{
+				chrome.tabs.sendRequest(currWindow.tabs[j].id, 
+					{"type": "update settings", "enabled": urlsGloballyAllowed, "whitelist": whitelist, "reload": shouldReload});							
+			}		
+		}
+		window.close();
+	});
+	
+	/*
+	var shouldReload = config.get('reloadCurrentTabOnToggle');
+	if (shouldReload)
+	{
+		// Reloading by chrome.tabs.executeScript(...). Works with or without javascript enabled.
+		chrome.tabs.executeScript(null, {code:"if(window.location.href.indexOf('http') == 0) {window.location.reload();}"});		
+		
+		// We can't use chrome.windows.getAll(...) from this page for some reason so we have to do
+		// it from the background page
+		//chrome.extension.getBackgroundPage().refreshTabs(url);
+	}
+	window.close();*/
+}
+</script>
+
+</body>
+</head>
+</html>

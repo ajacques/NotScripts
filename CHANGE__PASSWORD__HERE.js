@@ -1,0 +1,1 @@
+const ENCRYPTION_PASSWORD = "";

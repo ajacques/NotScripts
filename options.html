@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		  <meta name="author" content="Eric Wong, http://www.optimalcycling.com" />
+		  <meta name="keywords" content="XHTML, CSS, template, FullAhead" />
+		  <meta name="description" content="Because you really don't like pop ups" />
+		  <meta name="robots" content="index, follow, noarchive" />
+		  <meta name="googlebot" content="noarchive" />		
+		  
+		<title>Options | NotScripts By Eric Wong</title>
+		<link type="text/css" href="css/custom-theme/jquery-ui-1.8.4.custom.css" rel="stylesheet" />
+		<style type="text/css">
+			body{ font: 90% "Trebuchet MS", sans-serif; margin: 10px;}
+			#dialog_link {padding: .4em 1em .4em 20px;text-decoration: none;position: relative;}
+			#dialog_link span.ui-icon {margin: 0 5px 0 0;position: absolute;left: .2em;top: 50%;margin-top: -8px;}
+			ul#icons {margin: 0; padding: 0;}
+			ul#icons li {margin: 2px; position: relative; padding: 4px 0; cursor: pointer; float: left;  list-style: none;}
+			ul#icons span.ui-icon {float: left; margin: 0 4px;}
+			input.largerCheckbox
+			{
+				width: 30px;
+				height: 20px;
+			}			
+		</style>
+		
+		<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
+	  <script src="common/port.js"></script>
+	  <script src="CHANGE__PASSWORD__HERE.js"></script>
+	  <script src="common/common.js"></script>
+	  <script src="common/config.js"></script>
+	  <script src="options.js"></script>		
+	<script type="text/javascript">
+			$(function(){
+
+				// Accordion
+				$("#accordion").accordion({ header: "h3" });
+	
+				// Tabs
+				$('#tabs').tabs();
+	
+
+				// Dialog			
+				$('#dialog').dialog({
+					autoOpen: false,
+					width: 600,
+					buttons: {
+						"Ok": function() { 
+							$(this).dialog("close"); 
+						}, 
+						"Cancel": function() { 
+							$(this).dialog("close"); 
+						} 
+					}
+				});
+				
+				// Dialog Link
+				$('#dialog_link').click(function(){
+					$('#dialog').dialog('open');
+					return false;
+				});
+
+				// Datepicker
+				$('#datepicker').datepicker({
+					inline: true
+				});
+				
+				// Slider
+				$('#slider').slider({
+					range: true,
+					values: [17, 67]
+				});
+				
+				// Progressbar
+				$("#progressbar").progressbar({
+					value: 20 
+				});
+				
+				//hover states on the static widgets
+				$('#dialog_link, ul#icons li').hover(
+					function() { $(this).addClass('ui-state-hover'); }, 
+					function() { $(this).removeClass('ui-state-hover'); }
+				);
+				
+				// Button
+				$("#button_WhitelistSave").button();
+				
+				$("#button_ChoicesSave").button();
+				$("#radioset_ShowActionButton").buttonset();	
+				$("#radioset_ReloadTabs").buttonset();	
+				
+			});
+		</script>
+		<script type="text/javascript">
+		function saveButtonAnimate(buttonId)
+		{
+			$('#' + buttonId).button( 'option' , 'label' , 'SAVED!' ); 
+			setTimeout(function(){$('#' + buttonId).button( 'option' , 'label' , 'Save Changes' );}, 1500);		
+		}
+		</script>
+	</head>
+	<body bgcolor="grey">
+		<div style="position: relative; width: auto; height: auto;left: 0px; top: 0px; padding: 5px; overflow:hidden;" class="ui-widget ui-widget-content ui-corner-all"> 
+			<div style="display:inline">
+				<img src="Icon-128.png" width="48px" height="48px" style="padding: 10px 0px 0px 10px">
+				<label id="labelHeaderTitle" style="font-size:36px; font-weight: bold; padding: 0px 0px 0px 20px">NotScripts | Options</label>
+			</div>
+			<br/><br/>
+			<div style="display:inline">
+				<label id="labelHeaderSubTitle" style="padding: 0px 0px 0px 20px">By: Eric Wong, <a href="http://www.optimalcycling.com">http://www.optimalcycling.com</a></label>
+				<label id="labelHeaderVersion" style="padding: 0px 0px 0px 20px"></label>
+				
+				<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=AUK8JGZ8VQMEN&lc=CA&item_name=NotScripts%20Extension%20by%20Eric%20Wong%20%28http%3a%2f%2foptimalcycling%2ecom%29&item_number=NotScripts%20Extension&currency_code=CAD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted" id="labelHeaderDonate" style="padding: 0px 0px 0px 20px">Donate to the NotScripts Project</a>
+			</div>
+		</div> 
+	<div id="tabs" style="height: auto;">
+		<ul>
+			<li><a href="#tabs-4">Password Status</a></li>
+			<li><a href="#tabs-0">Limitations</a></li>
+			<li><a href="#tabs-3">About / Contact</a></li>
+			<li><a href="#tabs-1">Whitelist</a></li>
+			<li><a href="#tabs-2">Choices</a></li>			
+		</ul>
+		<div id="tabs-4">
+			<div id="passwordGood" class="ui-widget"> 
+				<div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+					<p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span> 
+					<strong>Password is set:</strong> NotScripts is working. Enjoy your browsing.</p> 
+				</div> 
+			</div> 		
+			<div id="passwordBad" class="ui-widget"> 
+				<div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
+					<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
+					<strong>ALERT! No password set for NotScripts.</strong> Will default deny scripts until changed and this message will show on each browser start up.</p> 
+				</div> 
+			</div> 
+			<br/>
+			<h3>What the Password is For</h3>
+			<div style="margin-left: 40px;">A NotScripts password is
+			required to be set for the initial use on a computer or if NotScripts
+			was updated. The password is used to protect your privacy by preventing
+			web sites from viewing the NotScripts whitelist caches. Due to
+			technical limitations, you are required to open a file to set the
+			password.<br>
+			</div>
+			<br>
+			<br>
+			<h3>Instructions to Set Password</h3>
+			<div style="margin-left: 40px;">Setting your NotScripts
+			password is simple once you've done it for the first time. Simply
+			follow these steps:</div>
+			<h4 style="margin-left: 40px;">Step 1:&nbsp;Navigate
+			to the NotScripts Folder</h4>
+			<div style="margin-left: 80px;">Open the NotScripts Google
+			Chrome extension folder. The location of this folder is shown below:<br>
+			<ul>
+			  <li><span style="font-style: italic;">Windows XP:</span>
+			&nbsp; C:\Documents and Settings\<span
+			 style="font-weight: bold; font-style: italic;">YOUR_USER_NAME</span>\Local
+			Settings\Application Data\Google\Chrome\User Data\Default\Extensions\<span
+			 name="extensionId"></span></li>
+			</ul>
+			<ul>
+			  <li><span style="font-style: italic;">Windows
+			Vista or 7:</span> &nbsp; C:\Users\<span
+			 style="font-weight: bold; font-style: italic;">YOUR_USER_NAME</span>\AppData\Local\Google\Chrome\User
+			Data\Default\Extensions\<span name="extensionId"></span></li>
+			</ul>
+			<ul>
+			  <li><span style="font-style: italic;">Mac OS X:</span>
+			&nbsp; ~/Library/Application
+			Support/Google/Chrome/Default/Extensions/<span name="extensionId"></span></li>
+			</ul>
+			<ul>
+			  <li><span style="font-style: italic;">Linux:</span>
+			&nbsp;
+			~/.config/google-chrome/Default/Extensions/<span name="extensionId"></span></li>
+			</ul>
+
+			Note: For Windows users, change <span
+			 style="font-weight: bold; font-style: italic;">YOUR_USER_NAME</span>
+			to the user name to
+			you are logged onto under Windows. If you're using Windows Explorer to
+			navigate to the folder, you might need to set <span
+			 style="font-weight: bold; font-style: italic;">Show hidden
+			files and
+			folders</span> in <span
+			 style="font-weight: bold; font-style: italic;">Tools
+			&gt; Folder Options... &gt; View</span>.<br>
+			<br>
+			For convenience, it is recommended that you make a shortcut to this
+			folder on your desktop or somewhere handy so that you can quickly reset
+			the NotScripts password after an update.<br>
+			</div>
+			<div style="margin-left: 40px;"><br>
+			</div>
+			<h4 style="margin-left: 40px;">Step 2: Open the NotScripts
+			Password File</h4>
+			<div style="margin-left: 80px;">Open the file&nbsp;<span
+			 style="font-weight: bold; font-style: italic;">CHANGE__PASSWORD__HERE.js</span>
+			for editing. For Windows users, do this by right-clicking on the file
+			and selecting&nbsp;<span
+			 style="font-weight: bold; font-style: italic;">Edit</span>
+			from the right-click menu. This will open up the file in NotePad for
+			you to enter your NotScripts password. <br>
+			</div>
+			<div style="margin-left: 40px;"><br>
+			</div>
+			<h4 style="margin-left: 40px;">Step 3: Set the NotScripts
+			Password</h4>
+			<div style="margin-left: 80px;">Choose a password for
+			NotScripts with the following restrictions:<br>
+			<br>
+			<div style="margin-left: 40px;"><span
+			 style="font-weight: bold;">Length:</span> 20 minimum,
+			100 maximum<br>
+			<span style="font-weight: bold;">Allowed Characters:</span>
+			abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890<br>
+			<span style="font-weight: bold;">Spaces:</span>
+			Allowed<br>
+			</div>
+			&nbsp;<br>
+			Put the password in between the quotes of the line that reads:<br>
+			<br>
+			<div style="margin-left: 40px;">
+			<span style="font-weight: bold; font-style: italic;">const
+			ENCRYPTION_PASSWORD = "";</span>
+			</div>
+			<br>
+			Example: <span style="font-style: italic;">FNqzJmJBA1GQFhuXBmEq20MqEqbn55w3MtT</span><br>
+			It should look like this after (except with your own password):<br>
+			<div style="margin-left: 40px;">
+			<br style="font-weight: bold; font-style: italic;">
+			<span style="font-weight: bold; font-style: italic;">const
+			ENCRYPTION_PASSWORD = "FNqzJmJBA1GQFhuXBmEq20MqEqbn55w3MtT";</span>
+			</div>
+			<br>
+			Save the file and close it when finished.<br>
+			</div>
+			<div style="margin-left: 40px;"><br>
+			</div>
+			<h4 style="margin-left: 40px;">Step 4: Restart Google
+			Chrome</h4>
+			<div style="margin-left: 80px;">Close and restart Google
+			Chrome for the new password to take effect in NotScripts. You are done!<br>
+			</div>
+			<br>
+			<br>
+			<h3>Backing Up Your Password File for Future Use</h3>
+			<div style="margin-left: 40px;">When NotScripts updates or
+			you try to use NotScripts on a different computer for the first
+			time&nbsp;with Google Chrome Sync, you will be required to provide
+			the password. It is highly recommended that you store a backup copy of
+			your password or password file somewhere handy for these purposes.<br>
+			</div>
+			<br>
+			<br>
+			<h3>Clear Your Browser HTML5 Storage if You Change to Another Password</h3>
+			<div style="margin-left: 40px;">If you change to a different password, it is important that you clear your browser's HTML5 storage so that the old encrypted caches for NotScripts are also cleared. This can be done in Google Chrome by clearing your cookies, which also clears the HTML5 storage at the same time. Otherwise, you will have to manually reload a few web sites for the first bit after changing to a different password.<br>
+			</div>			
+		</div>		
+		
+		<div id="tabs-0">
+			NotScripts for Google Chrome helps you be safer and more secure on the
+			web by limiting what third party javascript, iframes, and plugins can
+			run when used in conjunction with Google Chrome's built in tools.
+			Because of the way the Google Chrome extensions
+			API is structured, there are some limitations to NotScript and these
+			instructions will help you understand them.<br>
+			<br>
+			Before NotScripts, it was not possible for a Google Chrome extension to
+			provide a workable method of script/iframe/plugin blocking with
+			whitelisting capabilities on the same level as that of the popular
+			"<a href="http://noscript.net/">NoScript</a>" addon
+			that Firefox users have. Even the methods used by adblock type
+			extensions are not good enough to avoid breaking many sites when used
+			in this case. This is due to the
+			asynchronous nature of&nbsp;Google Chrome extensions where
+			synchronous methods are avoided for performance reasons. NotScripts
+			changes this by cleverly using HTML5&nbsp;storage caching to
+			overcome the timing issues.<br>
+			<br>
+			However, there are 3 main issues with NotScripts at the moment in
+			order of importance:<br>
+			<ol>
+			  <li>NotScripts can block plugins like Flash and Silverlight.
+			However, Java applets are a special case. Java applets embedded with
+			the standard <span style="font-weight: bold; font-style: italic;">&lt;EMBED&gt;&lt;/EMBED&gt;</span>
+			or
+				<span style="font-weight: bold; font-style: italic;">&lt;OBJECT&gt;&lt;/OBJECT&gt;</span>
+			tags can be blocked, but
+			Java applets embedded with the old, deprecated
+				<span style="font-weight: bold; font-style: italic;">&lt;APPLET&gt;&lt;/APPLET&gt;</span>
+			tags cannot be blocked
+			because Google Chrome does not fire load events for this legacy method.
+			The current workaround is to disable Java in your browser until this
+			can be fixed.</li>
+			  <br>
+			  <li>All scripts loaded from a source location (the vast
+			majority) can be blocked.
+			However, inline scripts that are directly written into the HTML code of
+			a web page cannot be blocked by NotScripts because Google Chrome does
+			not fire load
+			events for them. <br>For example: <span
+			 style="font-weight: bold; font-style: italic;">&lt;script
+			src="http://example.com/aScriptFile.js"&gt;&lt;/script&gt;</span>
+			can be blocked without any issues. However,<span
+			 style="font-weight: bold; font-style: italic;">
+			&lt;script&gt;alert("Hello, World!");&lt;/script&gt;</span>
+			written directly into the HTML code by the site you are visiting cannot
+			be blocked by NotScripts because it is not loaded from anywhere, it is
+			a direct part
+			of the web page you view. However, these inline scripts are usually
+			useful and are often required for a site to function properly. If you
+			want to, you can set Google Chrome to deny javascript for all sites and
+			use NotScripts to selectively pick the scripts to run on sites you
+			enable javascript on.&nbsp;</li>
+			  <br>
+			  <li>When you visit a web site for the first time with scripting
+			enabled, you may see NotScripts quickly reload it once as it caches the
+			whitelist and refreshes. Subsequently, there is no reloading needed
+			unless you happen to change a part of your whitelist that directly
+			affects the site. This is only a minor issue and happens less and less
+			as NotScripts learns your desired whitelist.</li>
+			</ol>
+
+
+		</div>
+		<div id="tabs-1">
+			<p>Whitelisted sites are allowed to load scripts/plugins from source locations when they are referenced on a web page. You can change the whitelist here or through the extension's page action button. Some top web sites are preloaded.</p>
+				For example, to whitelist http://www.google.com, you enter<br/>
+				<br/><b>&nbsp;&nbsp;google.com </b><br/> <p>which also whitelists google.com, maps.google.com, books.google.com, etc...</p>		
+			<!--
+			<div style="position: relative; width: 300px; height: 150px; padding:10px 30px 10px 30px; overflow:hidden;" class="fakewindowcontain"> 
+				<div class="ui-overlay"><div class="ui-widget-shadow ui-corner-all" style="width: 302px; height: 132px; position: absolute; left: 10px; top: 10px;"></div></div> 
+				<div style="position: absolute; width: 280px; height: 110px;left: 10px; top: 10px; padding: 10px;" class="ui-widget ui-widget-content ui-corner-all"> 
+						<p>Instructions for using the whitelist.</p> 
+				</div> 
+			</div> 	
+			-->
+			<div style="padding: 0px 0px 0px 40px">
+				<textarea name="whitelist" id="whitelist" cols="50" rows="20" style="padding: 10px 10px 10px 10px"></textarea>	
+			</div>
+			
+			<br/>
+			<button id="button_WhitelistSave" onclick="save(); saveButtonAnimate(this.id);">Save Changes</button>				
+		</div>
+		
+		<div id="tabs-2">
+			<br>
+			<form style="margin-top: 1em; display: inline"> 
+				<div id="radioset_ShowActionButton" style="padding-left: 50px;"> 
+					<input type="radio" id="radio_ON_ShowActionButton" name="radio_ShowActionButton" /><label for="radio_ON_ShowActionButton">ON</label> 
+					<input type="radio" id="radio_OFF_ShowActionButton" name="radio_ShowActionButton"/><label for="radio_OFF_ShowActionButton">OFF</label>
+					<label>&nbsp; &nbsp;Show action button in URL bar</label>
+				</div> 
+				<br></br>
+				<div id="radioset_ReloadTabs" style="padding-left: 50px;"> 
+					<input type="radio" id="radio_ON_ReloadTabs" name="radio_ReloadTabs" /><label for="radio_ON_ReloadTabs">ON</label> 
+					<input type="radio" id="radio_OFF_ReloadTabs" name="radio_ReloadTabs" /><label for="radio_OFF_ReloadTabs">OFF</label>
+					<label>&nbsp; &nbsp;Reload tabs when permissions change</label>
+				</div> 								
+			</form> 
+			<br>
+			<br>
+			<button id="button_ChoicesSave" onclick="save(); saveButtonAnimate(this.id);">Save Changes</button>			
+		</div>
+		
+		<div id="tabs-3">
+		NotScripts is created by Eric Wong. It gives you greater control over
+		what javascript, iframes, and plugins runs in your browser to increase security and lower the
+		CPU usage. It is useful to help mitigate attacks like cross-site
+		scripting (XSS) and drive by downloads by minimizing the third party content run.<br>
+		<br>
+		NotScripts is inspired by the "<a href="http://noscript.net/">NoScript</a>" addon for Firefox and seeks
+		to emulate it within the limitations of the Google Chrome extensions
+		API. A clever trick with HTML5 storage was implemented&nbsp;to
+		enable Google Chrome to have a greater degree of "<a href="http://noscript.net/">NoScript</a>" like
+		functionality than was previously possible.<br>
+		<br>
+		For more information, updates, and to view the change log, please visit
+		the project homepage at:<br>
+			<div style="padding: 10px 10px 10px 50px">
+				<h2><a href="http://www.optimalcycling.com">http://www.optimalcycling.com</a></h2>
+			</div>
+		To contact the author, visit the project homepage above and leave a comment, or you can e-mail:<br>
+			<div style="padding: 10px 10px 10px 50px">
+				<h2><a href="mailto:contact@optimalcycling.com">contact@optimalcycling.com</a></h2>
+			</div>	
+
+		NotScripts is open source and is released under the GNU General Public
+		License V3. This license and the license for code portions used from other projects are shown below:<br>
+		<br>
+
+		<ul>
+		  <li><big><span style="font-weight: bold;">NotScripts</span></big><br>		
+		<br>
+		&nbsp;&nbsp;&nbsp; Copyright © 2010&nbsp; Eric
+		Wong&nbsp;&nbsp;&nbsp; <br>
+		<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;
+		</span><a style="font-weight: bold;"
+		 href="mailto:contact@optimalcycling.com">contact@optimalcycling.com</a><br
+		 style="font-weight: bold;">
+		<span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;
+		</span><a style="font-weight: bold;"
+		 href="http://www.optimalcycling.com">http://www.optimalcycling.com</a><br>
+		<br>
+		&nbsp;&nbsp;&nbsp; This program is free software: you can
+		redistribute it and/or modify<br>
+		&nbsp;&nbsp;&nbsp; it under the terms of the GNU General
+		Public License as published by<br>
+		&nbsp;&nbsp;&nbsp; the Free Software Foundation, either
+		version 3 of the License, or<br>
+		&nbsp;&nbsp;&nbsp; (at your option) any later version.<br>
+		<br>
+		&nbsp;&nbsp;&nbsp; This program is distributed in the hope
+		that it will be useful,<br>
+		&nbsp;&nbsp;&nbsp; but WITHOUT ANY WARRANTY; without even
+		the implied warranty of<br>
+		&nbsp;&nbsp;&nbsp; MERCHANTABILITY or FITNESS FOR A
+		PARTICULAR PURPOSE.&nbsp; See the<br>
+		&nbsp;&nbsp;&nbsp; GNU General Public License for more
+		details.<br>
+		<br>
+		&nbsp;&nbsp;&nbsp; You should have received a copy of the
+		GNU General Public License<br>
+		&nbsp;&nbsp;&nbsp; along with this program.&nbsp; If
+		not, see &lt;<a style="font-weight: bold;"
+		 href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.<br>
+		<br>
+		<br>
+		</li>
+		
+		  <li><big><span style="font-weight: bold;">Stanford
+		Javascript Crypto Library</span></big><br>
+			<br>
+		Copyright © 2010 Emily Stark, Mike Hamburg and Dan Boneh. All rights
+		reserved. (<a style="font-weight: bold;"
+		 href="http://crypto.stanford.edu/sjcl/">http://crypto.stanford.edu/sjcl/</a>)<br>
+			<br>
+		Redistribution and use in source and binary forms, with or without
+		modification, are<br>
+		permitted provided that the following conditions are met:<br>
+			<br>
+		&nbsp;&nbsp; 1. Redistributions of source code must retain the
+		above copyright notice, this list of<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; conditions and the
+		following disclaimer.<br>
+			<br>
+		&nbsp;&nbsp; 2. Redistributions in binary form must reproduce
+		the above copyright notice, this list<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; of conditions and
+		the following disclaimer in the documentation and/or other materials<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; provided with the
+		distribution.<br>
+			<br>
+		THIS SOFTWARE IS PROVIDED BY Emily Stark, Mike Hamburg and Dan Boneh
+		``AS IS'' AND ANY EXPRESS OR IMPLIED<br>
+		WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+		MERCHANTABILITY AND<br>
+		FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+		&lt;COPYRIGHT HOLDER&gt; OR<br>
+		CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+		EXEMPLARY, OR<br>
+		CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+		SUBSTITUTE GOODS OR<br>
+		SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+		HOWEVER CAUSED AND ON<br>
+		ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+		(INCLUDING<br>
+		NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+		SOFTWARE, EVEN IF<br>
+		ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<br>
+			<br>
+		The views and conclusions contained in the software and documentation
+		are those of the<br>
+		authors and should not be interpreted as representing official
+		policies, either expressed<br>
+		or implied, of Emily Stark, Mike Hamburg and Dan Boneh.</li>
+		  <br>
+		  <br>
+		  <li><big><span style="font-weight: bold;">AdBlock
+		for Chrome and Safari</span></big> (port.js file - To be
+		used to port
+		NotScripts to Apple Safari in the future) <br>
+			<br>
+		&nbsp;&nbsp;&nbsp; Copyright © 2010 Michael Gundlach (<a
+		 style="font-weight: bold;"
+		 href="http://code.google.com/p/adblockforchrome/">http://code.google.com/p/adblockforchrome/</a>)<br>
+			<br>
+		And distributed under the following license ("MIT"):<br>
+			<br>
+		&nbsp;&nbsp;&nbsp; Permission is hereby granted, free of
+		charge, to any person<br>
+		&nbsp;&nbsp;&nbsp; obtaining a copy of this software and
+		associated documentation<br>
+		&nbsp;&nbsp;&nbsp; files (the "Software"), to deal in the
+		Software without<br>
+		&nbsp;&nbsp;&nbsp; restriction, including without
+		limitation the rights to use,<br>
+		&nbsp;&nbsp;&nbsp; copy, modify, merge, publish,
+		distribute, sublicense, and/or sell<br>
+		&nbsp;&nbsp;&nbsp; copies of the Software, and to permit
+		persons to whom the<br>
+		&nbsp;&nbsp;&nbsp; Software is furnished to do so, subject
+		to the following<br>
+		&nbsp;&nbsp;&nbsp; conditions:<br>
+			<br>
+		&nbsp;&nbsp;&nbsp; The above copyright notice and this
+		permission notice shall be<br>
+		&nbsp;&nbsp;&nbsp; included in all copies or substantial
+		portions of the Software.<br>
+			<br>
+		&nbsp;&nbsp;&nbsp; THE SOFTWARE IS PROVIDED "AS IS",
+		WITHOUT WARRANTY OF ANY KIND,<br>
+		&nbsp;&nbsp;&nbsp; EXPRESS OR IMPLIED, INCLUDING BUT NOT
+		LIMITED TO THE WARRANTIES<br>
+		&nbsp;&nbsp;&nbsp; OF MERCHANTABILITY, FITNESS FOR A
+		PARTICULAR PURPOSE AND<br>
+		&nbsp;&nbsp;&nbsp; NONINFRINGEMENT. IN NO EVENT SHALL THE
+		AUTHORS OR COPYRIGHT<br>
+		&nbsp;&nbsp;&nbsp; HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+		OR OTHER LIABILITY,<br>
+		&nbsp;&nbsp;&nbsp; WHETHER IN AN ACTION OF CONTRACT, TORT
+		OR OTHERWISE, ARISING<br>
+		&nbsp;&nbsp;&nbsp; FROM, OUT OF OR IN CONNECTION WITH THE
+		SOFTWARE OR THE USE OR<br>
+		&nbsp;&nbsp;&nbsp; OTHER DEALINGS IN THE SOFTWARE.</li>
+		  <br>
+		  <br>
+		  <li><big><span style="font-weight: bold;">AdThwart</span></big>
+		("relativeToAbsoluteUrl" function)<br>
+			<br>
+		&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; Copyright
+		© 2010 Tom Joseph (<a href="http://code.google.com/p/adthwart/" style="font-weight: bold;">http://code.google.com/p/adthwart/</a>)<br>
+		&nbsp;&nbsp;&nbsp; <br>
+		&nbsp;&nbsp;&nbsp; The contents of this file are subject to
+		the Mozilla Public License Version <br>
+		&nbsp;&nbsp;&nbsp; 1.1 (the "License"); you may not use
+		this file except in compliance with <br>
+		&nbsp;&nbsp;&nbsp; the License. You may obtain a copy of
+		the License at <br>
+		&nbsp;&nbsp;&nbsp; http://www.mozilla.org/MPL/<br>
+			<br>
+		&nbsp;&nbsp;&nbsp; Software distributed under the License
+		is distributed on an "AS IS" basis,<br>
+		&nbsp;&nbsp;&nbsp; WITHOUT WARRANTY OF ANY KIND, either
+		express or implied. See the License<br>
+		&nbsp;&nbsp;&nbsp; for the specific language governing
+		rights and limitations under the<br>
+		&nbsp;&nbsp;&nbsp; License.</li>
+		  <br>
+		  <br>
+		  <li><big><span style="font-weight: bold;">jQuery</span></big><br>
+			<br>
+		Copyright (c) 2010 John Resig, <a style="font-weight: bold;"
+		 href="http://jquery.com/">http://jquery.com/</a><br>
+			<br>
+		Permission is hereby granted, free of charge, to any person obtaining<br>
+		a copy of this software and associated documentation files (the<br>
+		"Software"), to deal in the Software without restriction, including<br>
+		without limitation the rights to use, copy, modify, merge, publish,<br>
+		distribute, sublicense, and/or sell copies of the Software, and to<br>
+		permit persons to whom the Software is furnished to do so, subject to<br>
+		the following conditions:<br>
+			<br>
+		The above copyright notice and this permission notice shall be<br>
+		included in all copies or substantial portions of the Software.<br>
+			<br>
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,<br>
+		EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF<br>
+		MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND<br>
+		NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE<br>
+		LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION<br>
+		OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION<br>
+		WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</li>
+		  <br>
+
+		</ul>
+			
+		</div>	
+	</div>	
+	
+	<script>
+		init();
+		
+	</script>
+
+	</body>
+</html>
+
+

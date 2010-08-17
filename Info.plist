@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Author</key>
+	<string>Eric Wong</string>
+	<key>CFBundleDisplayName</key>
+	<string>NotScripts</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.optimalcycling.safari.notscripts</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>1.0.0</string>
+	<key>Chrome</key>
+	<dict>
+		<key>Context Menu Items</key>
+		<array>
+			<dict>
+				<key>Command</key>
+				<string>showOptions</string>
+				<key>Identifier</key>
+				<string>optionsContextMenu</string>
+				<key>Title</key>
+				<string>Options | NotScripts</string>
+			</dict>
+		</array>
+		<key>Database Quota</key>
+		<real>5242880</real>
+		<key>Global Page</key>
+		<string>background.html</string>
+		<key>Toolbar Items</key>
+		<array>
+			<dict>
+				<key>Command</key>
+				<string>browserAction</string>
+				<key>Identifier</key>
+				<string>browserActionButton</string>
+				<key>Image</key>
+				<string>Icon-19.png</string>
+				<key>Label</key>
+				<string>NotScripts</string>
+				<key>Palette Label</key>
+				<string>NotScripts</string>
+				<key>Tool Tip</key>
+				<string>NotScripts</string>
+			</dict>
+		</array>
+	</dict>
+	<key>Content</key>
+	<dict>
+		<key>Scripts</key>
+		<dict>
+			<key>Start</key>
+			<array>
+				<string>common/port.js</string>
+				<string>common/sjcl.js</string>
+				<string>CHANGE__PASSWORD__HERE.js</string>
+				<string>common/common.js</string>
+				<string>blockStart.js</string>
+			</array>
+		</dict>
+	</dict>
+	<key>Description</key>
+	<string>Gives you control over what javascript, iframes, and plugins run.</string>
+	<key>ExtensionInfoDictionaryVersion</key>
+	<string>1.0</string>
+	<key>Permissions</key>
+	<dict>
+		<key>Website Access</key>
+		<dict>
+			<key>Include Secure Pages</key>
+			<true/>
+			<key>Level</key>
+			<string>All</string>
+		</dict>
+	</dict>
+	<key>Update Manifest URL</key>
+	<string>http://notscripts.googlecode.com/files/NotScriptsSafariUpdate.plist</string>
+	<key>Website</key>
+	<string>http://optimalcycling.com/other-projects/notscripts/</string>
+</dict>
+</plist>
