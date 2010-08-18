@@ -118,17 +118,27 @@
 		<ul>
 			<li><a href="#tabs-4">Password Status</a></li>
 			<li><a href="#tabs-0">Limitations</a></li>
+			<li><a href="#tabs-5">Change Log</a></li>
 			<li><a href="#tabs-3">About / Contact</a></li>
 			<li><a href="#tabs-1">Whitelist</a></li>
 			<li><a href="#tabs-2">Choices</a></li>			
 		</ul>
+	
 		<div id="tabs-4">
 			<div id="passwordGood" class="ui-widget"> 
 				<div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
 					<p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span> 
 					<strong>Password is set:</strong> NotScripts is working. Enjoy your browsing.</p> 
 				</div> 
-			</div> 		
+			</div> 	
+
+			<div id="extUpdated" class="ui-widget"> 
+				<div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
+					<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
+					<strong>ALERT! NotScripts has updated to Version <span name="updatedToVer"></span></strong> You will need to copy back your <i><b>CHANGE__PASSWORD__HERE.js</i></b> file into the NotScripts folder or re-enter your password. If you change to a different password, remember to clear the Google Chrome's HTML5 storage in the cookies area.</p> 
+				</div> 
+			</div> 
+			
 			<div id="passwordBad" class="ui-widget"> 
 				<div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
 					<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
@@ -327,8 +337,35 @@
 
 
 		</div>
+		
+		<div id="tabs-5">
+			<h3>NoScripts 0.9.1 August 18th, 2010</h3>
+			<ul>
+			  <li>Bug fix: (Reported by <span
+			 style="font-weight: bold; font-style: italic;">rEnr3n</span>)
+			Google Chrome may not fire storage change events when NotScripts
+			initializes. This can result in the "Revoke All Temporary" button not
+			working for a session if you shut down Google Chrome with everything
+			globally allowed.</li>
+			  <li>Bug fix: (Reported by <span
+			 style="font-weight: bold; font-style: italic;">rEnr3n</span>)
+			Improved the blocking compatibility for embed and object tags used on
+			video sites.</li>
+			  <li>Bug fix: Duplicates of the same url from different iframes
+			are now filtered to avoid cluttering the drop down menu.</li>
+			  <li>New: You can choose to turn off NotScripts blocking for scripts,
+			iframes, embeds, or objects by placing a special value in
+			CHANGE__PASSWORD__HERE.js</li>
+			</ul>
+			<h3>NoScripts 0.9.0 August 17th, 2010</h3>
+			<ul>
+			  <li>First public version.</li>
+			</ul>
+
+		</div>			
+		
 		<div id="tabs-1">
-			<p>Whitelisted sites are allowed to load scripts/plugins from source locations when they are referenced on a web page. You can change the whitelist here or through the extension's page action button. Some top web sites are preloaded.</p>
+			<p>Whitelisted sites are allowed to load scripts/iframes/plugins from source locations when they are referenced on a web page. You can change the whitelist here or through the extension's page action button. Some top web sites are preloaded.</p>
 				For example, to whitelist http://www.google.com, you enter<br/>
 				<br/><b>&nbsp;&nbsp;google.com </b><br/> <p>which also whitelists google.com, maps.google.com, books.google.com, etc...</p>		
 			<!--

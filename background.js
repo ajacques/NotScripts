@@ -187,8 +187,9 @@ function refreshTabs(urlPattern)
 Generates a json object with all the applicable settings for a website of "url".
 */
 function generateAllSettings(url, topWindowUrl)
-{			
-	return {"enabled": urlsGloballyAllowed,
+{
+	//console.log("globalAllowAll at generateAllSettings: " + urlsGloballyAllowed + "   " + config.get('globalAllowAll'));
+	return {"enabled": config.get('globalAllowAll'),
 			"whitelist": whitelist,
 			"reload": config.get('reloadCurrentTabOnToggle')};			
 }

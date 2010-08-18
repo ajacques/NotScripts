@@ -34,6 +34,25 @@ function init() {
 	extensionId = (extensionId.length > 1 ? extensionId[1] : "");
 	$("span[name=extensionId]").text(extensionId);
 	
+	if (config.get('currVersion') !== config.get('lastVersion'))
+	{
+		if (config.get('lastVersion'))	// Not first install so show that we updated
+		{
+			$('#extUpdated').css({"display": "block"});
+			var newDisplayVersion = config.get('currDisplayVersion');
+			$("span[name=updatedToVer]").text(newDisplayVersion);
+		}
+		else
+		{
+			$('#extUpdated').css({"display": "none"});
+		}
+		
+		config.set('lastVersion', config.get('currVersion'));
+	}
+	else
+	{
+		$('#extUpdated').css({"display": "none"});
+	}
 	
 	$('#whitelist').val(whitelist.join('\n'));
 	$('#labelHeaderVersion').text('Version ' + config.get('currDisplayVersion'));

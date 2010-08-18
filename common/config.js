@@ -38,6 +38,7 @@ config.defaults({
 	reloadCurrentTabOnToggle: true,
 	showPageActionButton: true,
 	
+	lastVersion: 0,
 	currVersion: 0,
 	currDisplayVersion: "0.0.0",
 	

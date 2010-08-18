@@ -277,7 +277,7 @@ var spacerBottomDiv = document.getElementById("wrapperSpacerBottom");
 var spacerTopDiv = document.getElementById("wrapperSpacerTop");
 
 var encounteredError = false;
-var arrayOfButtons = new Array();
+var arrayOfShownUrls = new Array();
 
 if (!ENCRYPTION_PASSWORD)
 {
@@ -358,13 +358,9 @@ function showLastBlocked(response)
 		fatalErrorDiv.onclick=function() { chrome.tabs.executeScript(currTabId, {code:'window.location.reload();'}); window.close();}
 		fatalErrorWrapper.style.display = "block";
 		spacerTopDiv.style.display = "block";
-
-		//for (var i = 0; i < arrayOfButtons.length; i++)
-			//arrayOfButtons[i].style.display = "block";
 		
 		statusDiv.innerHTML = "Error!";
-		
-		//return;
+
 	}
 
 	// Toggling on/off
@@ -404,6 +400,18 @@ function showLastBlocked(response)
 				{						
 					currBlockedURL = encodeURI(currBlockedURL.trim());
 
+					var isAlreadyShown = false;
+					for (var k = 0; k < arrayOfShownUrls.length; k++)
+					{
+						if (currBlockedURL === arrayOfShownUrls[k])
+						{
+							isAlreadyShown = true;
+							break;
+						}
+					}
+					if (isAlreadyShown) continue;
+					else arrayOfShownUrls.push(currBlockedURL);
+			
 					var urlChunks = currBlockedURL.chunk(45);
 					var theMessage = "";
 
@@ -455,6 +463,18 @@ function showLastBlocked(response)
 				if (currBlockedURL)
 				{		
 					currBlockedURL = encodeURI(currBlockedURL.trim());
+
+					var isAlreadyShown = false;
+					for (var k = 0; k < arrayOfShownUrls.length; k++)
+					{
+						if (currBlockedURL === arrayOfShownUrls[k])
+						{
+							isAlreadyShown = true;
+							break;
+						}
+					}
+					if (isAlreadyShown) continue;
+					else arrayOfShownUrls.push(currBlockedURL);
 					
 					var urlChunks = currBlockedURL.chunk(45);
 					var theMessage = "";
@@ -506,15 +526,12 @@ function removeSite(url) {
 	//if (isAllowed(url))
 		revokeUrl(url);
 	
-	//updateAllTabs(true);	
 	updateCurrentTab(false);
 }
 
 function addSite(url) {
 	if (!isAllowed(url))
 		permitUrl(url);
-	
-	//updateAllTabs(true);
 
 	if (SAFARI)
 		updateCurrentTab(true);
@@ -542,8 +559,12 @@ function updateCurrentTab(refreshLists)
 }
 
 function updateAllTabs(refreshLists) {
+	chrome.extension.getBackgroundPage().console.log("updateAllTabs");
+	
 	chrome.windows.getAll({populate: true}, function(windowsArray) {
 		urlsGloballyAllowed = config.get('globalAllowAll');
+		
+		//chrome.extension.getBackgroundPage().console.log("outside urlsGloballyAllowed: " + urlsGloballyAllowed);
 		
 		if (refreshLists)
 			whitelist = config.get('whitelist');	
@@ -553,6 +574,7 @@ function updateAllTabs(refreshLists) {
 			var currWindow = windowsArray[i];
 			for (var j = 0; j < currWindow.tabs.length; j++)
 			{
+				//chrome.extension.getBackgroundPage().console.log("urlsGloballyAllowed: " + urlsGloballyAllowed);
 				chrome.tabs.sendRequest(currWindow.tabs[j].id, 
 					{"type": "update settings", "enabled": urlsGloballyAllowed, "whitelist": whitelist, "reload": shouldReload});							
 			}		

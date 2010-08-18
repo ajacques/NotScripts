@@ -18,5 +18,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+NoScripts 0.9.1 August 18th, 2010
+	Bug fix: (Reported by rEnr3n) Google Chrome may not fire storage change events when NotScripts initializes. 
+		This can result in the "Revoke All Temporary" button not working for a session if you shut down Google Chrome with everything globally allowed.
+	Bug fix: (Reported by rEnr3n) Improved the blocking compatibility for embed and object tags used on video sites.
+	Bug fix: Duplicates of the same url from different iframes are now filtered to avoid cluttering the drop down menu.
+	New: You can selectively turn off NotScript blocking for scripts, iframes, embeds, and objects by placing a special value in CHANGE__PASSWORD__HERE.js
+	
 NoScripts 0.9.0 August 17th, 2010
-First public version.
+	First public version.
+	

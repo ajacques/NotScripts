@@ -277,13 +277,34 @@ function getElUrl(el, type) {
 		case 'EMBED':
 		{
 			// Does Google Chrome even use embeds?
-			//console.log("Looking at embeds: ");
+			var codeBase = window.location.href;
+			if (el.codeBase) codeBase = el.codeBase;
 			
-			if (el.src) return el.src;
-			if (el.data) return el.data;
-			if (el.codeBase) return el.codeBase;
-			if (el.code) return el.code;
-			return null;
+			if (el.src)
+			{
+				if (el.src.indexOf("http") === 0)
+					return el.src;
+				else
+					return codeBase;
+			}
+			
+			if (el.data)
+			{
+				if (el.data.indexOf("http") === 0)
+					return el.data;
+				else
+					return codeBase;				
+			}
+			
+			if (el.code)
+			{
+				if (el.code.indexOf("http") === 0)
+					return el.code;
+				else
+					return codeBase;			
+			}
+			
+			return window.location.href;
 		}
 		case 'IFRAME': 
 		{
@@ -291,12 +312,17 @@ function getElUrl(el, type) {
 		}
 		case 'OBJECT':
 		{
-			// If the data attribute is given, we know the source.
-			if (el.data) return el.data;
+			var codeBase = window.location.href;
+			if (el.codeBase) codeBase = el.codeBase;	
 			
-			// Else if a codeBase is given, we have to look at the params to see if we can find the source of what is loading.
-			// Will this cause compatibility problems?
-			if (!el.codeBase) return null;
+			// If the data attribute is given, we know the source.
+			if (el.data)
+			{
+				if (el.data.indexOf("http") === 0)
+					return el.data;
+				else
+					return codeBase;				
+			}
 			
 			var plist = el.getElementsByTagName('param');
 			var codeSrc = null;
@@ -307,10 +333,14 @@ function getElUrl(el, type) {
 				
 				if(paramName === 'movie' || paramName === 'src' || paramName === 'codebase' || paramName === 'data')
 					return plist[i].value;
-				else if (paramName === 'code')
+				else if (paramName === 'code' || paramName === 'url')
 					codeSrc = plist[i].value;
 			}
-			return codeSrc;
+			
+			if (codeSrc)
+				return codeSrc;
+			else
+				return window.location.href;
 			
 		}
 		

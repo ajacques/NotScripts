@@ -29,6 +29,11 @@ const PASSWORD_GOOD = isPasswordGood();
 
 var fatalError = false;
 
+const do_not_block_iframes = (((!(typeof DO_NOT_BLOCK_IFRAMES === 'undefined')) && DO_NOT_BLOCK_IFRAMES) ? true : false);
+const do_not_block_embeds = (((!(typeof DO_NOT_BLOCK_EMBEDS === 'undefined')) && DO_NOT_BLOCK_EMBEDS) ? true : false);
+const do_not_block_objects = (((!(typeof DO_NOT_BLOCK_OBJECTS === 'undefined')) && DO_NOT_BLOCK_OBJECTS) ? true : false);
+const do_not_block_scripts = (((!(typeof DO_NOT_BLOCK_SCRIPTS === 'undefined')) && DO_NOT_BLOCK_SCRIPTS) ? true : false);
+
 var blockSettings = {
     has: function(key) {
 		if (PASSWORD_GOOD)
@@ -197,9 +202,14 @@ function blockScripts(event)
 	var elType = getElType(el);
 	var currUrl = relativeToAbsoluteUrl(getElUrl(el, elType));
 	
+	if ((!do_not_block_iframes && (elType === EL_TYPE.IFRAME)) || 
+		(!do_not_block_embeds && (elType === EL_TYPE.EMBED)) || 
+		(!do_not_block_objects && (elType === EL_TYPE.OBJECT)) || 
+		(!do_not_block_scripts && (elType === EL_TYPE.SCRIPT)))
+	
 	// Note: Inline scripts do not fire the beforeLoad event and so cannot be prevented from running
-	if (elType === EL_TYPE.IFRAME || elType === EL_TYPE.EMBED || elType === EL_TYPE.OBJECT 
-		|| elType === EL_TYPE.SCRIPT)
+	//if (elType === EL_TYPE.IFRAME || elType === EL_TYPE.EMBED || elType === EL_TYPE.OBJECT 
+	//	|| elType === EL_TYPE.SCRIPT)
 	{			
 		var mainURL = getPrimaryDomain(currUrl);
 		
@@ -314,9 +324,10 @@ else
 	// Will have to use the Safari specific way.
 	chrome.extension.onRequest.addListener(
 	  function(msg, src, send) {
+		//if(OUT_PUT_LOG) console.log("In addListener");
+		
 		if (msg.type === "get sources")
 		{
-			//if(OUT_PUT_LOG) console.log("Get sources from: " + window.location.href);
 			if (window.top === window)
 			{
 				send({"enabled": NotScripts_Allowed, "pageSourcesAllowed": pageSourcesAllowed, "pageSourcesForbidden": pageSourcesForbidden, "fatalError": fatalError, "url": window.location.href});
@@ -329,7 +340,6 @@ else
 		} 
 		else if (msg.type === "get sources for top window")	// Used to update the state icon of the website
 		{
-			//if(OUT_PUT_LOG) console.log("Get sources from: " + window.location.href);
 			if (window.top === window)
 			{
 				send({"enabled": NotScripts_Allowed, "pageSourcesAllowed": pageSourcesAllowed, "pageSourcesForbidden": pageSourcesForbidden, "fatalError": fatalError, "thisUrl": window.location.href});
@@ -337,7 +347,8 @@ else
 		} 			
 		else if (msg.type === "update settings")
 		{
-			updateSettings(msg)
+			if(OUT_PUT_LOG) console.log("update settings global allow: " + msg.enabled);
+			updateSettings(msg);
 			send({});
 		} 			
 		else
