@@ -1,93 +1,152 @@
-const MIN_PASSWORD_LENGTH = 20;
-const MAX_PASSWORD_LENGTH = 100;
-
-function isPasswordGood()
-{
-	if (ENCRYPTION_PASSWORD && ENCRYPTION_PASSWORD.length >= 20 && ENCRYPTION_PASSWORD.length <= 100 /*&& ENCRYPTION_PASSWORD != "FNqzJmJBA1GQFhuXBmEq20MqEqbn55w3MtT"*/)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-/*
-RegExp.escape = function(text) {
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-}
-
-// We must escape str to match correctly. The typical Internet code snippet incorrectly shows it without escaping, which is totally wrong.
-String.prototype.startsWith = function(str) 
-{return (this.match("^"+RegExp.escape(str))==str)};
-String.prototype.endsWith = function(str) 
-{return (this.match(RegExp.escape(str)+"$")==str)};
-*/
-
 String.prototype.trim = function () {
-    return this.replace(/^\s*/, "").replace(/\s*$/, "");
+	// http://blog.stevenlevithan.com/archives/faster-trim-javascript
+	return this.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 };
-/*String.prototype.trim = function(){return 
-(this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""))};*/
 String.prototype.chunk = function(n) {
 	if (typeof n=='undefined') n=2;
 	return this.match(RegExp('.{1,'+n+'}','g'));
 };
 
-/*Array.prototype.compare = function(testArr) {
-    if (this.length != testArr.length) return false;
-    for (var i = 0; i < testArr.length; i++) {
-        if (this[i].compare) { 
-            if (!this[i].compare(testArr[i])) return false;
-        }
-        if (this[i] !== testArr[i]) return false;
-    }
-    return true;
-};*/
 
-/*
-Example for http://www.google.com/something.html, this returns www.google.com. Returns null if no match is found.
-*/
-function getMainURL(currURL)
+const MIN_PASSWORD_LENGTH = 20;
+const MAX_PASSWORD_LENGTH = 100;
+
+// To be used...
+const PASSWORD_STATUS = {
+  "other": 0,	// The checking should not have to use this normally.
+  "tooShort": 1,
+  "tooLong": 2,
+  "empty": 3,
+  "invalidChars": 4,	// We won't be checking this for now since empty/undefined/or a syntax error would throw first.
+  "okay": 5,
+  "undefined": 6
+};
+
+function isPasswordGood()
 {
-	if (!currURL)
-		return null;
-	var splitURL = currURL.match(/^http[s]?:\/\/[^\.]+\.[^\/:]+/i);
-	if (splitURL && splitURL.length > 0)
-		return splitURL[0];
-	else
-		return null;
+	if (typeof ENCRYPTION_PASSWORD === 'undefined')
+		return PASSWORD_STATUS.undefined;
+	else if (ENCRYPTION_PASSWORD === null || ENCRYPTION_PASSWORD === "")
+		return PASSWORD_STATUS.empty;
+	else if (ENCRYPTION_PASSWORD.length < MIN_PASSWORD_LENGTH)
+		return PASSWORD_STATUS.tooShort;
+	else if (ENCRYPTION_PASSWORD.length > MAX_PASSWORD_LENGTH)
+		return PASSWORD_STATUS.tooLong;
+	else 
+		return PASSWORD_STATUS.okay;
 }
 
+// parseUri 1.2.2
+// (c) Steven Levithan <stevenlevithan.com>
+// MIT License
+// http://stevenlevithan.com/demo/parseuri/js/
+// parseUri does not handle IPv6 addresses
+function parseUri (str) {
+	var	o   = parseUri.options,
+		m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
+		uri = {},
+		i   = 14;
+
+	while (i--) uri[o.key[i]] = m[i] || "";
+
+	uri[o.q.name] = {};
+	uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+		if ($1) uri[o.q.name][$1] = $2;
+	});
+
+	return uri;
+};
+
+parseUri.options = {
+	strictMode: false,
+	key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
+	q:   {
+		name:   "queryKey",
+		parser: /(?:^|&)([^&=]*)=?([^&]*)/g
+	},
+	parser: {
+		strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+		loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
+	}
+};
+
+// These are some of the common and known top level domains from Mozilla's http://publicsuffix.org/
+// They are used to remove the subdomains from url's with known top level domains
+// A more complete list will be generated in the future
+const knownTLDsForRegEx = "asia|biz|cat|coop|edu|info|eu.int|int|gov|jobs|mil|mobi|name|tel|travel|aaa.pro|aca.pro|acct.pro|avocat.pro|bar.pro|cpa.pro|jur.pro|law.pro|med.pro|eng.pro|pro|ar.com|br.com|cn.com|de.com|eu.com|gb.com|hu.com|jpn.com|kr.com|no.com|qc.com|ru.com|sa.com|se.com|uk.com|us.com|uy.com|za.com|com|ab.ca|bc.ca|mb.ca|nb.ca|nf.ca|nl.ca|ns.ca|nt.ca|nu.ca|on.ca|pe.ca|qc.ca|sk.ca|yk.ca|gc.ca|ca|gb.net|se.net|uk.net|za.net|net|ae.org|za.org|org|[^\.\/]+\.uk|act.edu.au|nsw.edu.au|nt.edu.au|qld.edu.au|sa.edu.au|tas.edu.au|vic.edu.au|wa.edu.au|act.gov.au|nt.gov.au|qld.gov.au|sa.gov.au|tas.gov.au|vic.gov.au|wa.gov.au|[^\.\/]+\.au";
+const reKnownUrlwTLD = new RegExp("([^\.\/]+\.(" + knownTLDsForRegEx + "))($|\/|:){1}", "i");
+const reKnownTLDs = new RegExp("^(" + knownTLDsForRegEx + ")$", "i");
+
+// http://intermapper.ning.com/profiles/blogs/a-regular-expression-for-ipv6
+// www.intermapper.com
+const reIPv6 = new RegExp("^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$", "i");
+
 /*
-Example for http://maps.google.com/something.html or maps.google.com, this returns google.com. Returns currURL if no match is found.
-http://www.w3schools.com/HTML/html_url.asp
+Example for http://maps.google.com/something.html or maps.google.com, this returns google.com.
+If it cannot match google.com as a known valid primary domain, it will return maps.google.com.
+
+http://en.wikipedia.org/wiki/URI_scheme#Generic_syntax
+// http://en.wikipedia.org/wiki/IPv4
+// http://en.wikipedia.org/wiki/IPv6
+// http://en.wikipedia.org/wiki/IPv6_address
+// http://en.wikipedia.org/wiki/Localhost
+// http://en.wikipedia.org/wiki/Hosts_(file)
+// Contains support for localhost style names; hex, decimal, and octal forms of IPv4;
+		
+Examples of IPv6 in a URL (The IPv6 must be surrounded by square brackets in a valid URL, )
+http://en.wikipedia.org/wiki/IPv6_address#Literal_IPv6_addresses_in_Network_Resource_Identifiers
+
+	http://[2001:0db8:85a3:08d3:1319:8a2e:0370:7348]/
+	https://[2001:0db8:85a3:08d3:1319:8a2e:0370:7348]:443/
+	
+Note: The expected input for currURL is a full URL with a leading protocol.
 */
 function getPrimaryDomain(currURL)
 {
-	if (!currURL)
-		return null;
+	// Sometimes websites create empty elements (empty src) and then change the src which fires another load event
+	// This ensures that the empty element gets created so that the second event will fire for verification
+	if (!currURL || !currURL.trim())
+	{
+		if (window.location.href)
+			return getPrimaryDomain(window.location.href);
+		else
+			return null;
+	}
 	
-	currURL = currURL.toLowerCase();
+	// Note: Do not use decodeURIComponent since Google Chrome automatically reformats urls formatted with that and it
+	// does not recognize urls as full urls if something has been encoded with encodeURIComponent,
+	// rather they are returned as urls relative to the current page.
+	currURL = decodeURI(currURL.toLowerCase().trim());
 	
-	var knownForms = currURL.match(/([^\.\/]+\.(asia|biz|cat|coop|edu|info|eu.int|int|gov|jobs|mil|mobi|name|tel|travel|aaa.pro|aca.pro|acct.pro|avocat.pro|bar.pro|cpa.pro|jur.pro|law.pro|med.pro|eng.pro|pro|ar.com|br.com|cn.com|de.com|eu.com|gb.com|hu.com|jpn.com|kr.com|no.com|qc.com|ru.com|sa.com|se.com|uk.com|us.com|uy.com|za.com|com|ab.ca|bc.ca|mb.ca|nb.ca|nf.ca|nl.ca|ns.ca|nt.ca|nu.ca|on.ca|pe.ca|qc.ca|sk.ca|yk.ca|gc.ca|ca|gb.net|se.net|uk.net|za.net|net|ae.org|za.org|org|[^\.\/]+\.uk|act.edu.au|nsw.edu.au|nt.edu.au|qld.edu.au|sa.edu.au|tas.edu.au|vic.edu.au|wa.edu.au|act.gov.au|nt.gov.au|qld.gov.au|sa.gov.au|tas.gov.au|vic.gov.au|wa.gov.au|[^\.\/]+\.au))($|\/|:){1}/i);
+	// Try to parse currURL as an IPv6 address first 
+	var splitIPv6 = currURL.match(/[^\.\/:]+:\/\/([^\/:]+:[^\/:]+@)?\[([a-z0-9:\.]+)\]/i);
+	if (splitIPv6 && splitIPv6.length > 2 && reIPv6.test(splitIPv6[2]))
+	{
+		return splitIPv6[2];
+	}
+	
+	currURL = parseUri(currURL)["host"];
+
+	var knownForms = currURL.match(reKnownUrlwTLD);
 	if (knownForms && knownForms.length > 1)
-		return knownForms[1]
-	else
-	{		
-		var splitURL = currURL.toLowerCase().match(/^http[s]?:\/\/([^\.]+\.[^\/:]+)/i);
-		if (splitURL && splitURL.length > 1)
+	{
+		return knownForms[1];
+	}
+	else	// Check for some known invalid types
+	{
+		var urlRemovedWWW = currURL.match(/^www\.([^\.]+\.[^\/]+)/i);	
+		if (urlRemovedWWW && urlRemovedWWW.length > 1)
 		{
-			var splitURL2 = splitURL[1].match(/^www\.([^\.]+\.[^\/]+)/i);
-			if (splitURL2 && splitURL2.length > 1)
-				return splitURL2[1];
-			else
-				return splitURL[1]
+			// Filters out the common www. in a text style url
+			return urlRemovedWWW[1];
 		}
 		else
 		{
-			return currURL;
+			// Some checking to see if the primary domain contains invalid characters or is a known TLD
+			if (currURL.match(/(^[\.\/:]|[\+\^\?\|\*\{\}\$\s\<\>\[\]\&=;!#~`,'"])/i) || reKnownTLDs.test(currURL))
+				return null;
+			else
+				return currURL;
 		}
 	}
 }
@@ -102,44 +161,25 @@ Returns: Returns true if url starts with urlPattern. If urlPattern starts with a
 */
 function patternMatches(url, urlPattern)
 {
-	/*if (!url || !urlPattern)
+	var coreUrl = getPrimaryDomain(url);
+	
+	if (!coreUrl)
 		return false;
-		
-	if (RegExp('^\\^', 'i').test(urlPattern))
-	{
-		//^http[s]?:\/\/([^\.]+\.)*google.co.uk($|\/)
-		return RegExp(urlPattern, 'i').test(url);			
-	}
-	else if (RegExp('^http[s]?:\/\/', 'i').test(urlPattern))
-	{
-		var startsMatch = (url.toLowerCase().indexOf(urlPattern.toLowerCase()) === 0 ? true : false);
-		if (startsMatch && (url.length === urlPattern.length || url.charAt(urlPattern.length) === "/" || url.charAt(urlPattern.length) === ":"))
-			return true
-		else
-			return false;
-	}
-	else*/
-	{
-		var coreUrl = getPrimaryDomain(url);
-		
-		if (!coreUrl)
-			return false;
-		coreUrl = coreUrl.toLowerCase();
-		urlPattern = urlPattern.toLowerCase();		
-		
-		var endsMatch = false;
-		var matchedIndex = coreUrl.indexOf(urlPattern);		
-		if (matchedIndex >= 0 && (matchedIndex + urlPattern.length) === coreUrl.length)
-		   endsMatch = true;
-   
-		if (!endsMatch)
-			return false;
-		if (coreUrl.length === urlPattern.length)
-			return true;
-		if (coreUrl.charAt(coreUrl.length - urlPattern.length - 1) === ".")
-			return true;
+	coreUrl = coreUrl.toLowerCase();
+	urlPattern = urlPattern.toLowerCase();		
+	
+	var endsMatch = false;
+	var matchedIndex = coreUrl.indexOf(urlPattern);		
+	if (matchedIndex >= 0 && (matchedIndex + urlPattern.length) === coreUrl.length)
+	   endsMatch = true;
+
+	if (!endsMatch)
 		return false;
-	}
+	if (coreUrl.length === urlPattern.length)
+		return true;
+	if (coreUrl.charAt(coreUrl.length - urlPattern.length - 1) === ".")
+		return true;
+	return false;
 }
 
 function islisted(list, url) {
@@ -147,6 +187,8 @@ function islisted(list, url) {
 		return false;
 		
 	var isOnList = false;
+	
+	// Need to change this to a binary search with sorted list by reverse of the strings
 	for (var i = 0; i < list.length; i++)
 	{
 		isOnList = patternMatches(url, list[i]);
@@ -192,7 +234,6 @@ function fisherYatesShuffle ( array )
 	}
 }
 
-/*
 function injectAnon(f) {
     var script = document.createElement("script");
 	script.type = "text/javascript";
@@ -214,13 +255,12 @@ function injectGlobalWithId(f, id) {
     script.textContent = f;
     document.documentElement.appendChild(script);
 }
-*/
 
 function relativeToAbsoluteUrl(url) {
     if(!url)
       return url;
    
-    if(url.match(/^http/))
+	if(url.match(/^http|^ftp/))
         return url;
 		
     // Leading / means absolute path
@@ -250,7 +290,7 @@ const EL_TYPE = {
 function getElType(el) {
 	// Note: We cannot block java that uses the deprecated APPLET tags because it doesn't fire beforeload
 	//console.log("nodeName: " + el.nodeName);
-	switch (el.nodeName) 
+	switch (el.nodeName.toUpperCase()) 
 	{
 		case 'SCRIPT': return EL_TYPE.SCRIPT;
 		case 'OBJECT': return EL_TYPE.OBJECT;
@@ -268,7 +308,7 @@ function getElType(el) {
 
 function getElUrl(el, type) {
 	//console.log("getElUrl: " + el.nodeName + "     " +  el.outerHTML);
-	switch (el.nodeName) 
+	switch (el.nodeName.toUpperCase()) 
 	{
 		case 'SCRIPT': 
 		{

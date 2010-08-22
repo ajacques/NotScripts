@@ -1,3 +1,9 @@
+/*
+This file should not to be used by content scripts.
+It should only be loaded once in the extension, ie: background page.
+Otherwise, you will have to worry about storage sync issues.
+*/
+
 var config = {
     has: function(key) {
         return key in localStorage;
@@ -16,15 +22,21 @@ var config = {
 			localStorage[key] = JSON.stringify(value);
 		} catch (err) {
 			if (err == QUOTA_EXCEEDED_ERR) {
-				alert('Storage quota exceeded for NotScripts.');
+				alert('Local storage quota exceeded for NotScripts extension.');
 			}
 		}
     },
     defaults: function(vals) {
         for (var key in vals) {
             if (!this.has(key)) {
-                this.set(key, vals[key]);
+				this.set(key, vals[key]);
             }
+			else	// In case our data gets corrupted during end user use
+			{
+				var currVal = this.get(key);
+				if (currVal === 'undefined' || currVal === 'null')
+					this.set(key, vals[key]);			
+			}
         };
     }
 };
@@ -34,7 +46,6 @@ config.defaults({
     whitelist: ["google.com", "google.ca", "google.co.uk", "google.com.au", "googleapis.com", "gstatic.com", "youtube.com", "ytimg.com", 
 		"live.com", "microsoft.com", "hotmail.com", "apple.com", "yahooapis.com", "yimg.com"],
 	
-	globalAllowAll: false,
 	reloadCurrentTabOnToggle: true,
 	showPageActionButton: true,
 	
@@ -47,41 +58,45 @@ config.defaults({
 	blacklist: []
 });
 
-var isOldChrome = false;
-/*
-function determineIfOldChrome()
-{
-	var splitVer = navigator.appVersion.match(/^[0-9]+\.[0-9]+/i);
-	if (splitVer && splitVer.length > 0)
-	{
-		try 
-		{
-			var verNum = parseFloat(splitVer[0]);
-			if (verNum < 5.0)	// Versions of Google Chrome less than 5 may not have the local storage events we want
-				return true;
-			else
-				return false;
+var sessionConfig = {
+    has: function(key) {
+        return key in sessionStorage;
+    },
+    get: function(key) {
+        if (this.has(key)) {
+            try {
+                return JSON.parse(sessionStorage[key]);
+            } catch(e) {
+                return sessionStorage[key];
+            }
+        }
+    },
+    set: function(key, value) {
+		try {
+			sessionStorage[key] = JSON.stringify(value);
+		} catch (err) {
+			if (err == QUOTA_EXCEEDED_ERR) {
+				alert('Session storage quota exceeded for NotScripts extension.');
+			}
 		}
-		catch (err)
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return false;
-	}
-}
+    },
+    defaults: function(vals) {
+        for (var key in vals) {
+            if (!this.has(key) || typeof this.get(key) === 'undefined') {
+                this.set(key, vals[key]);
+            }
+        };
+    }
+};
 
-if (!SAFARI)
-	isOldChrome = determineIfOldChrome();
-*/
-
+sessionConfig.defaults({
+	tempAllowList: [],
+	globalAllowAll: false
+});
 
 var whitelist = config.get('whitelist');
-var blacklist = config.get('blacklist');
-var urlsGloballyAllowed = config.get('globalAllowAll');
-var useBlacklistMode = config.get('useBlacklistMode');
+var tempAllowList = sessionConfig.get('tempAllowList');
+var urlsGloballyAllowed = sessionConfig.get('globalAllowAll');
 
 function handleStorageChange(event)
 {
@@ -89,62 +104,107 @@ function handleStorageChange(event)
 	{
 		whitelist = config.get('whitelist');
 	}
-	else if (event.key === "blacklist")
+	else if (event.key === "tempAllowList")
 	{
-		blacklist = config.get('blacklist');
-	}
+		tempAllowList = sessionConfig.get('tempAllowList');
+	}	
 	else if (event.key === "globalAllowAll")
 	{
-		urlsGloballyAllowed = config.get('globalAllowAll');
-	}
-	else if (event.key === "useBlacklistMode")
-	{
-		useBlacklistMode = config.get('useBlacklistMode');
-	}		
+		urlsGloballyAllowed = sessionConfig.get('globalAllowAll');
+	}	
 }
 
-// Bug: Safari does not fire "storage" events
 window.addEventListener("storage", handleStorageChange, false);
 
 
 function isAllowed(url)
 {
-	if (SAFARI)
-			useBlacklistMode = config.get('useBlacklistMode');
-	if (useBlacklistMode)
-		return !isBlacklisted(url);
-	else
-		return isWhitelisted(url);
-}
-
-function revokeUrl(url)
-{
-	if (SAFARI)
-			useBlacklistMode = config.get('useBlacklistMode');
-	if (useBlacklistMode)
-		addToBlacklist(url);
-	else
-		removeFromWhitelist(url)
+	return islisted(whitelist, url) || islisted(tempAllowList, url);
 }
 
 function permitUrl(url)
 {
-	if (SAFARI)
-			useBlacklistMode = config.get('useBlacklistMode');
-	if (useBlacklistMode)
-		removeFromBlacklist(url);
-	else
-		addToWhitelist(url);
+	removeFromList(tempAllowList, "tempAllowList", url, true);
+	addToList(whitelist, "whitelist", url, false);
 }
 
-function addToList(list, listName, url) {
+function revokeUrl(url)
+{
+	removeFromList(whitelist, "whitelist", url, false);
+	removeFromList(tempAllowList, "tempAllowList", url, true);
+}
+
+function tempListPermitUrl(url)
+{
+	removeFromList(whitelist, "whitelist", url, false);
+	addToList(tempAllowList, "tempAllowList", url, true);
+}
+
+function tempListRevokeUrl(url)
+{
+	removeFromList(tempAllowList, "tempAllowList", url, true);
+}
+
+
+function removeEmptyInArray(links)
+{
+	if (links)
+	{
+		for (var i = 0; i < links.length; i++)
+		{
+			if (links[i])
+				links[i] = links[i].trim();
+			if (!links[i])
+			{
+				links.splice(i, 1);
+				i--;
+			}			
+		}
+	}
+	return links;
+}
+
+/*
+Repairs conflicting rules or duplicates
+*/
+function cleanUpWhitelist()
+{
+	/*for (var i = 0; i < whitelist.length; i++)
+	{
+		patternMatches	
+	}
+	saveWhitelist(whitelist);*/
+}
+
+function saveWhitelist(newWhitelist)
+{
+	/*
+	Need to change this to sorted list by reverse of the strings
+	Example: Say we have
+		zzz.aaa.com
+		    aaa.com
+			bbb.com
+			
+	Then we want it to sort to:
+			aaa.com
+		zzz.aaa.com	
+			bbb.com
+	*/
+	config.set("whitelist", removeEmptyInArray(newWhitelist.values));
+	whitelist = config.get('whitelist');	// This line required by Options.html to update correctly
+}
+
+function addToList(list, listName, url, isSession) {
+	//Need to change this to sorted list by reverse of the strings
 	list.push(url.toLowerCase());
 	
-	// This is inefficient, we are saving the entire list each time
-	config.set(listName, list);	
+	if (isSession)
+		sessionConfig.set(listName, list);	
+	else
+		config.set(listName, list);	
 }
 
-function removeFromList(list, listName, url) {
+function removeFromList(list, listName, url, isSession) {
 	var isOnList = false;
 	for (var i = 0; i < list.length; i++)
 	{
@@ -157,44 +217,12 @@ function removeFromList(list, listName, url) {
 	}
 	
 	// This is inefficient, we are saving the entire list each time
-	config.set(listName, list);
+	if (isSession)
+		sessionConfig.set(listName, list);	
+	else
+		config.set(listName, list);	
 }
 
-function isWhitelisted(url) {
-	if (SAFARI || isOldChrome)
-		whitelist = config.get('whitelist');
-	return islisted(whitelist, url);	
-}
-
-function addToWhitelist(url) {	
-	if (SAFARI || isOldChrome)
-		whitelist = config.get('whitelist');
-	addToList(whitelist, "whitelist", url);
-}
-
-function removeFromWhitelist(url) {
-	if (SAFARI || isOldChrome)
-		whitelist = config.get('whitelist');
-	removeFromList(whitelist, "whitelist", url);
-}
-
-function isBlacklisted(url) {
-	if (SAFARI || isOldChrome)
-		blacklist = config.get('blacklist');
-	return islisted(blacklist, url);
-}
-
-function addToBlacklist(url) {	
-	if (SAFARI || isOldChrome)
-		blacklist = config.get('blacklist');
-	addToList(blacklist, "blacklist", url);
-}
-
-function removeFromBlacklist(url) {
-	if (SAFARI || isOldChrome)
-		blacklist = config.get('blacklist');
-	removeFromList(blacklist, "blacklist", url);
-}
 
 
 

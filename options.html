@@ -23,15 +23,14 @@
 				height: 20px;
 			}			
 		</style>
-		
+			
 		<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
 		<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>
-	  <script src="common/port.js"></script>
-	  <script src="CHANGE__PASSWORD__HERE.js"></script>
-	  <script src="common/common.js"></script>
-	  <script src="common/config.js"></script>
-	  <script src="options.js"></script>		
-	<script type="text/javascript">
+		<script src="common/port.js"></script>
+		<script src="CHANGE__PASSWORD__HERE.js"></script>
+		<script src="common/common.js"></script>
+		<script src="options.js"></script>		
+		<script type="text/javascript">
 			$(function(){
 
 				// Accordion
@@ -93,11 +92,11 @@
 			});
 		</script>
 		<script type="text/javascript">
-		function saveButtonAnimate(buttonId)
-		{
-			$('#' + buttonId).button( 'option' , 'label' , 'SAVED!' ); 
-			setTimeout(function(){$('#' + buttonId).button( 'option' , 'label' , 'Save Changes' );}, 1500);		
-		}
+			function saveButtonAnimate(buttonId)
+			{
+				$('#' + buttonId).button( 'option' , 'label' , 'SAVED!' ); 
+				setTimeout(function(){$('#' + buttonId).button( 'option' , 'label' , 'Save Changes' );}, 1500);		
+			}
 		</script>
 	</head>
 	<body bgcolor="grey">
@@ -135,14 +134,14 @@
 			<div id="extUpdated" class="ui-widget"> 
 				<div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
 					<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
-					<strong>ALERT! NotScripts has updated to Version <span name="updatedToVer"></span></strong> You will need to copy back your <i><b>CHANGE__PASSWORD__HERE.js</i></b> file into the NotScripts folder or re-enter your password. If you change to a different password, remember to clear the Google Chrome's HTML5 storage in the cookies area.</p> 
+					<strong>ALERT! NotScripts has updated to Version <span name="updatedToVer"></span></strong> You will need to copy back your <i><b>CHANGE__PASSWORD__HERE.js</b></i> file into the NotScripts folder or re-enter your password. If you change to a different password, remember to clear the Google Chrome's HTML5 storage in the cookies area.</p> 
 				</div> 
 			</div> 
 			
 			<div id="passwordBad" class="ui-widget"> 
 				<div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
 					<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span> 
-					<strong>ALERT! No password set for NotScripts.</strong> Will default deny scripts until changed and this message will show on each browser start up.</p> 
+					<strong>ALERT! No password set for NotScripts.</strong> <span name="pwdProbDescrip"></span> Will default deny scripts until changed and this message will show on each browser start up.</p> 
 				</div> 
 			</div> 
 			<br/>
@@ -291,6 +290,9 @@
 			changes this by cleverly using HTML5&nbsp;storage caching to
 			overcome the timing issues.<br>
 			<br>
+Please note that NotScripts is not a guarantee of security and users should always practice secure web surfing habits. Currently NotScripts does not provide advanced protection for things such as clickjacking and other methods found in the "<a href="http://noscript.net/">NoScript</a>" addon for Firefox and a malicious website may still be able to successfully use such techniques.	
+			<br>
+			<br>
 			However, there are 3 main issues with NotScripts at the moment in
 			order of importance:<br>
 			<ol>
@@ -392,7 +394,7 @@
 					<input type="radio" id="radio_OFF_ShowActionButton" name="radio_ShowActionButton"/><label for="radio_OFF_ShowActionButton">OFF</label>
 					<label>&nbsp; &nbsp;Show action button in URL bar</label>
 				</div> 
-				<br></br>
+				<br>
 				<div id="radioset_ReloadTabs" style="padding-left: 50px;"> 
 					<input type="radio" id="radio_ON_ReloadTabs" name="radio_ReloadTabs" /><label for="radio_ON_ReloadTabs">ON</label> 
 					<input type="radio" id="radio_OFF_ReloadTabs" name="radio_ReloadTabs" /><label for="radio_OFF_ReloadTabs">OFF</label>
