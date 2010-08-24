@@ -18,6 +18,39 @@ function showOptionsPage()
 	});	
 }
 
+function updateTab(currTabId)
+{
+	chrome.tabs.sendRequest(currTabId, 
+		{"type": "update settings", 
+			"tempVals": {"globalAllowAll": sessionConfig.get("globalAllowAll"), "tempAllowList": tempAllowList},
+			"whitelist": whitelist, "reload": config.get("reloadCurrentTabOnToggle")
+		});	
+}
+
+function updateAllTabs(refreshLists) {
+	chrome.windows.getAll({populate: true}, function(windowsArray) {
+		if (refreshLists)
+		{
+			whitelist = config.get('whitelist');
+		}
+		
+		var shouldReload = config.get('reloadCurrentTabOnToggle');
+		for (var i = 0; i < windowsArray.length; i++)
+		{
+			var currWindow = windowsArray[i];
+			for (var j = 0; j < currWindow.tabs.length; j++)
+			{
+				chrome.tabs.sendRequest(currWindow.tabs[j].id, 
+					{"type": "update settings", 
+						"tempVals": {"globalAllowAll": urlsGloballyAllowed, "tempAllowList": tempAllowList},
+						"whitelist": whitelist, 
+						"reload": shouldReload
+					});							
+			}		
+		}
+	});
+}
+
 /*
 Generates a json object with all the applicable settings for a website of "url".
 */

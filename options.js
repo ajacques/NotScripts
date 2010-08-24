@@ -2,7 +2,9 @@ const bgPage = chrome.extension.getBackgroundPage();
 
 function lines(s) 
 { 
-	var links = (s ? s.split('\n') : []); 
+	var links = (s ? s.split('\n') : []);
+	for (var i in links)
+		links[i] = encodeURI(links[i]);
 	return links;
 }
 
@@ -78,6 +80,9 @@ function init() {
 	
 	$('#radio_ON_ShowActionButton').attr('checked', bgPage.config.get('showPageActionButton'));
 	$('#radio_OFF_ShowActionButton').attr('checked', !bgPage.config.get('showPageActionButton'));
+	
+	if (bgPage.extFatalError)
+		$('#extFatalError').css({"display": "block"});
 }
 
 function save() {

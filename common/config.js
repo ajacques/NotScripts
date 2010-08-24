@@ -3,6 +3,7 @@ This file should not to be used by content scripts.
 It should only be loaded once in the extension, ie: background page.
 Otherwise, you will have to worry about storage sync issues.
 */
+var extFatalError = false;
 
 var config = {
     has: function(key) {
@@ -12,7 +13,7 @@ var config = {
         if (this.has(key)) {
             try {
                 return JSON.parse(localStorage[key]);
-            } catch(e) {
+            } catch(err) {
                 return localStorage[key];
             }
         }
@@ -21,9 +22,10 @@ var config = {
 		try {
 			localStorage[key] = JSON.stringify(value);
 		} catch (err) {
-			if (err == QUOTA_EXCEEDED_ERR) {
-				alert('Local storage quota exceeded for NotScripts extension.');
-			}
+			extFatalError = true;
+			//if (err == QUOTA_EXCEEDED_ERR) {
+				//alert('Local storage quota exceeded for NotScripts extension.');
+			//}
 		}
     },
     defaults: function(vals) {
@@ -53,6 +55,8 @@ config.defaults({
 	currVersion: 0,
 	currDisplayVersion: "0.0.0",
 	
+	multiSelect: false,
+	
 	// Black list mode not current implemented
 	useBlacklistMode: false,
 	blacklist: []
@@ -75,9 +79,10 @@ var sessionConfig = {
 		try {
 			sessionStorage[key] = JSON.stringify(value);
 		} catch (err) {
-			if (err == QUOTA_EXCEEDED_ERR) {
-				alert('Session storage quota exceeded for NotScripts extension.');
-			}
+			extFatalError = true;
+			//if (err == QUOTA_EXCEEDED_ERR) {
+			//	alert('Session storage quota exceeded for NotScripts extension.');
+			//}
 		}
     },
     defaults: function(vals) {
@@ -98,6 +103,15 @@ var whitelist = config.get('whitelist');
 var tempAllowList = sessionConfig.get('tempAllowList');
 var urlsGloballyAllowed = sessionConfig.get('globalAllowAll');
 
+function clearSettings()
+{
+	extFatalError = false;
+	sessionConfig.set("tempAllowList", []);
+	config.set("blacklist", []);
+	config.set("whitelist", []);
+	window.location.reload();
+}
+
 function handleStorageChange(event)
 {
 	if (event.key === "whitelist")
@@ -116,6 +130,15 @@ function handleStorageChange(event)
 
 window.addEventListener("storage", handleStorageChange, false);
 
+function isWhitelisted(url)
+{
+	return islisted(whitelist, url)
+}
+
+function isTempListed(url)
+{
+	return islisted(tempAllowList, url)
+}
 
 function isAllowed(url)
 {
@@ -137,12 +160,9 @@ function revokeUrl(url)
 function tempListPermitUrl(url)
 {
 	removeFromList(whitelist, "whitelist", url, false);
-	addToList(tempAllowList, "tempAllowList", url, true);
-}
-
-function tempListRevokeUrl(url)
-{
-	removeFromList(tempAllowList, "tempAllowList", url, true);
+	
+	if (!islisted(tempAllowList, url))
+		addToList(tempAllowList, "tempAllowList", url, true);
 }
 
 
@@ -171,7 +191,7 @@ function cleanUpWhitelist()
 {
 	/*for (var i = 0; i < whitelist.length; i++)
 	{
-		patternMatches	
+
 	}
 	saveWhitelist(whitelist);*/
 }
@@ -209,6 +229,7 @@ function removeFromList(list, listName, url, isSession) {
 	for (var i = 0; i < list.length; i++)
 	{
 		isOnList = patternMatches(url, list[i]);
+		//isOnList = patternMatches(url, list[i]) || patternMatches(list[i], url);
 		if (isOnList)
 		{
 			list.splice(i, 1);

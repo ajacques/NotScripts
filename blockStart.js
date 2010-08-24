@@ -22,6 +22,8 @@ const OUT_PUT_LOG = false;
 
 // DO NOT reuse the following two names if you reuse this code because it will collide with NotScript!
 // Pick your own random names.
+// Also, be careful about compatibility issues with other extensions that use this code because you don't
+// want multiple extensions reloading the page. That would be annoying.
 const NAME_NOTSCRIPTS_ALLOWED = "dQGIgCdSC1FWpDUMWx1z";
 const NAME_NOTSCRIPTS_WHITELIST = "WQQAW0JuSt0304877x4l";
 
@@ -30,13 +32,13 @@ const PASSWORD_GOOD = isPasswordGood();
 var fatalError = false;
 
 // We are giving the user the option of putting
-// const DO_NOT_BLOCK_IFRAMES = false;	// true or undefined to not block iframes, false to block
+// const DO_NOT_BLOCK_IFRAMES = true;
 // const DO_NOT_BLOCK_EMBEDS = true;
 // const DO_NOT_BLOCK_OBJECTS = true;
 // const DO_NOT_BLOCK_SCRIPTS = true;
 // const DO_NOT_MITIGATE_INLINE_SCRIPTS = true;
-// into their CHANGE__PASSWORD__HERE.js file to disable blocking.
-const do_not_block_iframes = (!(typeof DO_NOT_BLOCK_IFRAMES === 'undefined') ? (DO_NOT_BLOCK_IFRAMES ? true : false) : true);
+// into their CHANGE__PASSWORD__HERE.js file to disable each type of blocking.
+const do_not_block_iframes = (((!(typeof DO_NOT_BLOCK_IFRAMES === 'undefined')) && DO_NOT_BLOCK_IFRAMES) ? true : false);
 const do_not_block_embeds = (((!(typeof DO_NOT_BLOCK_EMBEDS === 'undefined')) && DO_NOT_BLOCK_EMBEDS) ? true : false);
 const do_not_block_objects = (((!(typeof DO_NOT_BLOCK_OBJECTS === 'undefined')) && DO_NOT_BLOCK_OBJECTS) ? true : false);
 const do_not_block_scripts = (((!(typeof DO_NOT_BLOCK_SCRIPTS === 'undefined')) && DO_NOT_BLOCK_SCRIPTS) ? true : false);
@@ -168,6 +170,7 @@ if (OUT_PUT_LOG)
 }
 
 var pageSourcesAllowed = new Array();
+var pageSourcesTempAllowed = new Array();
 var pageSourcesForbidden = new Array();
 var NotScripts_Allowed = sessionBlockSettings.get(NAME_NOTSCRIPTS_ALLOWED);
 var NotScripts_Whitelist = blockSettings.get(NAME_NOTSCRIPTS_WHITELIST);
@@ -177,8 +180,7 @@ function isWhitelisted(url) {
 }
 
 function isTempAllowListed(url) {
-	//return islisted(NotScripts_Allowed.tempAllowList, url);	
-	return false;
+	return islisted(NotScripts_Allowed.tempAllowList, url);	
 }
 
 /*
@@ -215,30 +217,124 @@ function blockScripts(event)
 		(!do_not_block_objects && (elType === EL_TYPE.OBJECT)) || 
 		(!do_not_block_scripts && (elType === EL_TYPE.SCRIPT)))
 	{			
-		//console.log("Before " + currUrl);
+		if (OUT_PUT_LOG) 
+			console.log("Before " + currUrl);
 		
-		var mainURL = getPrimaryDomain(currUrl);
+		var mainURL = getPrimaryDomain(elType === EL_TYPE.IFRAME ? window.location.href : currUrl);
 		
-		//console.log("Allowed " + currUrl + "   " + mainURL + "   " + NotScripts_Allowed.globalAllowAll + "    " + isWhitelisted(mainURL) + "   " + isTempAllowListed(mainURL));			
+		if (OUT_PUT_LOG) 
+			console.log("After " + "   " + mainURL + "   " + NotScripts_Allowed.globalAllowAll + "    " + isWhitelisted(mainURL) + "   " + isTempAllowListed(mainURL));			
 		
-		if ((PASSWORD_GOOD === PASSWORD_STATUS.okay) && (NotScripts_Allowed.globalAllowAll || isWhitelisted(mainURL) || isTempAllowListed(mainURL)))
+		if ((PASSWORD_GOOD === PASSWORD_STATUS.okay))
 		{	
-			if (pageSourcesAllowed.indexOf(mainURL) < 0)
-				pageSourcesAllowed.push(mainURL);		
+			if (NotScripts_Allowed.globalAllowAll || isWhitelisted(mainURL))
+			{
+				if (pageSourcesAllowed.indexOf(mainURL) < 0)
+					pageSourcesAllowed.push(mainURL);
+			}
+			else if (isTempAllowListed(mainURL))
+			{
+				if (pageSourcesTempAllowed.indexOf(mainURL) < 0)
+					pageSourcesTempAllowed.push(mainURL);
+			}
+			else
+			{
+				preventAndAddToList(event, mainURL);			
+			}
 		}
 		else
 		{
-			/*
-			el.className += " blocked-content";
-			el.addEventListener("click", loadContent, true);	
-			*/
-			
-			event.preventDefault();
-			
-			if (pageSourcesForbidden.indexOf(mainURL) < 0)
-				pageSourcesForbidden.push(mainURL);		
+			preventAndAddToList(event, mainURL);
 		}	
 	}
+}
+
+function preventAndAddToList(event, mainURL)
+{
+	/*
+	var el = event.target;
+	el.className += " blocked-content";
+	el.addEventListener("click", loadContent, true);	
+	*/
+	
+	event.preventDefault();
+	
+	if (pageSourcesForbidden.indexOf(mainURL) < 0)
+		pageSourcesForbidden.push(mainURL);	
+}
+
+function mitigateAndAddToList(mainURL)
+{
+	injectAnon(function(){
+		for (var i in window)
+		{
+			try {
+				var jsType = typeof window[i];
+				switch (jsType.toUpperCase())
+				{					
+					case "FUNCTION": 
+						if (window[i] !== window.location)
+						{
+							if (window[i] === window.open || window[i] === window.showModelessDialog)
+								window[i] = function(){return true;};
+							else
+								window[i] = function(){return "";};
+						}
+						break;							
+				}			
+			}
+			catch(err)
+			{}		
+		}
+		
+		for (var i in document)
+		{
+			try {
+				var jsType = typeof document[i];
+				switch (jsType.toUpperCase())
+				{					
+					case "FUNCTION":
+						//if (document[i] != document.write)	// uncomment this line if debugging and want to try and print out functions
+							document[i] = function(){return "";};
+						break;					
+				}			
+			}
+			catch(err)
+			{}		
+		}
+
+		try {
+			eval = function(){return "";};				
+			unescape = function(){return "";};
+			String = function(){return "";};
+			parseInt = function(){return "";};
+			parseFloat = function(){return "";};
+			Number = function(){return "";};
+			isNaN = function(){return "";};
+			isFinite = function(){return "";};
+			escape = function(){return "";};
+			encodeURIComponent = function(){return "";};
+			encodeURI = function(){return "";};
+			decodeURIComponent = function(){return "";};
+			decodeURI = function(){return "";};
+			Array = function(){return "";};
+			Boolean = function(){return "";};
+			Date = function(){return "";};
+			Math = function(){return "";};
+			Number = function(){return "";};
+			RegExp = function(){return "";};
+			
+			var oNav = navigator;
+			navigator = function(){return "";};
+			oNav = null;
+		}
+		catch(err)
+		{}
+		
+	});		
+
+	if (pageSourcesForbidden.indexOf(mainURL) < 0)
+		pageSourcesForbidden.push(mainURL);	
 }
 
 /*
@@ -248,84 +344,28 @@ We can't "disable" all the core javascript functions, but we try to do the best 
 function mitigateInlineScripts()
 {
 	var mainURL = getPrimaryDomain(window.location.href);
-
-	if ((PASSWORD_GOOD === PASSWORD_STATUS.okay) && (NotScripts_Allowed.globalAllowAll || isWhitelisted(mainURL) || isTempAllowListed(mainURL)))
-	{
-		if (pageSourcesAllowed.indexOf(mainURL) < 0)
-			pageSourcesAllowed.push(mainURL);		
+	
+	if ((PASSWORD_GOOD === PASSWORD_STATUS.okay))
+	{	
+		if (NotScripts_Allowed.globalAllowAll || isWhitelisted(mainURL))
+		{
+			if (pageSourcesAllowed.indexOf(mainURL) < 0)
+				pageSourcesAllowed.push(mainURL);
+		}
+		else if (isTempAllowListed(mainURL))
+		{
+			if (pageSourcesTempAllowed.indexOf(mainURL) < 0)
+				pageSourcesTempAllowed.push(mainURL);
+		}
+		else
+		{
+			mitigateAndAddToList(mainURL);			
+		}
 	}
 	else
-	{		
-		injectAnon(function(){
-			for (var i in window)
-			{
-				try {
-					var jsType = typeof window[i];
-					switch (jsType.toUpperCase())
-					{					
-						case "FUNCTION": 
-							if (window[i] !== window.location)
-							{
-								if (window[i] === window.open || window[i] === window.showModelessDialog)
-									window[i] = function(){return true;};	// for pop ups
-								else
-									window[i] = function(){return "";};
-							}
-							break;							
-					}			
-				}
-				catch(err)
-				{}		
-			}
-			
-			for (var i in document)
-			{
-				try {
-					var jsType = typeof document[i];
-					switch (jsType.toUpperCase())
-					{					
-						case "FUNCTION":
-							//if (document[i] != document.write)	//comment this line out if not debugging
-								document[i] = function(){return "";};
-							break;					
-					}			
-				}
-				catch(err)
-				{}		
-			}
-
-			try {
-				eval = function(){return "";};				
-				unescape = function(){return "";};
-				String = function(){return "";};
-				parseInt = function(){return "";};
-				parseFloat = function(){return "";};
-				Number = function(){return "";};
-				isNaN = function(){return "";};
-				isFinite = function(){return "";};
-				escape = function(){return "";};
-				encodeURIComponent = function(){return "";};
-				encodeURI = function(){return "";};
-				decodeURIComponent = function(){return "";};
-				decodeURI = function(){return "";};
-				Array = function(){return "";};
-				Boolean = function(){return "";};
-				Date = function(){return "";};
-				Math = function(){return "";};
-				Number = function(){return "";};
-				RegExp = function(){return "";};
-				
-				var oNav = navigator;
-				navigator = function(){return "";};
-			}
-			catch(err)
-			{}
-			
-		});		
-
-		if (pageSourcesForbidden.indexOf(mainURL) < 0)
-			pageSourcesForbidden.push(mainURL);		
-	}
+	{
+		mitigateAndAddToList(mainURL);
+	}		
 }
 
 function updateSettings(settings)
@@ -337,40 +377,85 @@ function updateSettings(settings)
 		console.log("updateSettings NotScripts_Allowed.globalAllowAll From " + NotScripts_Allowed.globalAllowAll + " to " + settings.tempVals.globalAllowAll);
 
 	var needToReload = false;
-	if (NotScripts_Allowed.globalAllowAll !== settings.tempVals.globalAllowAll)
+	if (NotScripts_Allowed.globalAllowAll !== settings.tempVals.globalAllowAll 
+		|| NotScripts_Allowed.tempAllowList.length > 0 
+		|| settings.tempVals.tempAllowList.length > 0)
 	{
 		sessionBlockSettings.set(NAME_NOTSCRIPTS_ALLOWED, settings.tempVals);
 		NotScripts_Allowed = sessionBlockSettings.get(NAME_NOTSCRIPTS_ALLOWED);
-
+		
 		if (NotScripts_Allowed.globalAllowAll && pageSourcesForbidden.length > 0)
+		{
 			needToReload = true;
+		}
 	}	
 		
 	blockSettings.set(NAME_NOTSCRIPTS_WHITELIST, settings.whitelist);
 	NotScripts_Whitelist = blockSettings.get(NAME_NOTSCRIPTS_WHITELIST);
 	
 	if (!needToReload && !NotScripts_Allowed.globalAllowAll)
-	{		
-		for (var i in pageSourcesAllowed)
+	{
+		for (var i in pageSourcesForbidden)
 		{
-			if (!isWhitelisted(pageSourcesAllowed[i]))
+			if (isTempAllowListed(pageSourcesForbidden[i]) || isWhitelisted(pageSourcesForbidden[i]))
 			{
 				needToReload = true;
 				break;
 			}
+		}	
+
+		var moveFromAllowed = new Array();
+		if (!needToReload)
+		{
+			for (var i = 0; i < pageSourcesAllowed.length; i++)
+			{
+				if (isTempAllowListed(pageSourcesAllowed[i]))
+				{
+					moveFromAllowed.push(pageSourcesAllowed[i]);
+					pageSourcesAllowed.splice(i, 1);
+					i--;
+				}
+				else if (!isWhitelisted(pageSourcesAllowed[i]))
+				{
+					needToReload = true;
+					break;				
+				}
+			}
+		}
+			
+		var moveFromTempAllowed = new Array();
+		if (!needToReload)
+		{			
+			for (var i = 0; i < pageSourcesTempAllowed.length; i++)
+			{
+				if (isWhitelisted(pageSourcesTempAllowed[i]))
+				{
+					moveFromTempAllowed.push(pageSourcesTempAllowed[i]);
+					pageSourcesTempAllowed.splice(i, 1);
+					i--;
+				}
+				else if (!isTempAllowListed(pageSourcesTempAllowed[i]))
+				{
+					needToReload = true;
+					break;				
+				}
+			}
 		}
 
 		if (!needToReload)
-			for (var i in pageSourcesForbidden)
+		{			
+			for (var i = 0; i < moveFromAllowed.length; i++)
 			{
-				if (isWhitelisted(pageSourcesForbidden[i]))
-				{
-					needToReload = true;
-					break;
-				}
+				pageSourcesTempAllowed.push(moveFromAllowed[i]);
 			}
+			
+			for (var i = 0; i < moveFromTempAllowed.length; i++)
+			{
+				pageSourcesAllowed.push(moveFromTempAllowed[i]);
+			}			
+		}
 	}
-		
+
 	if (settings.reload && needToReload && !fatalError)
 	{
 		window.location.reload();
@@ -388,11 +473,13 @@ chrome.extension.onRequest.addListener(
 	{
 		if (window.top === window)
 		{
-			send({"globalAllowAll": NotScripts_Allowed.globalAllowAll, "pageSourcesAllowed": pageSourcesAllowed, "pageSourcesForbidden": pageSourcesForbidden, "fatalError": fatalError, "url": window.location.href});
+			send({"globalAllowAll": NotScripts_Allowed.globalAllowAll, "pageSourcesAllowed": pageSourcesAllowed, "pageSourcesTempAllowed": pageSourcesTempAllowed,
+				"pageSourcesForbidden": pageSourcesForbidden, "fatalError": fatalError, "url": window.location.href});
 		}
 		else
 		{
-			chrome.extension.sendRequest({"type": "get sources response", "globalAllowAll": NotScripts_Allowed.globalAllowAll, "pageSourcesAllowed": pageSourcesAllowed, 
+			chrome.extension.sendRequest({"type": "get sources response", "globalAllowAll": NotScripts_Allowed.globalAllowAll, 
+				"pageSourcesAllowed": pageSourcesAllowed, "pageSourcesTempAllowed": pageSourcesTempAllowed,
 				"pageSourcesForbidden": pageSourcesForbidden, "fatalError": fatalError, "url": window.location.href});				
 		}
 	} 
@@ -400,7 +487,8 @@ chrome.extension.onRequest.addListener(
 	{
 		if (window.top === window)
 		{
-			send({"globalAllowAll": NotScripts_Allowed.globalAllowAll, "pageSourcesAllowedLength": pageSourcesAllowed.length, "pageSourcesForbiddenLength": pageSourcesForbidden.length, "fatalError": fatalError, "thisUrl": window.location.href});
+			send({"globalAllowAll": NotScripts_Allowed.globalAllowAll, "pageSourcesAllowedLength": pageSourcesAllowed.length + pageSourcesTempAllowed.length,
+				"pageSourcesForbiddenLength": pageSourcesForbidden.length, "fatalError": fatalError, "thisUrl": window.location.href});
 		}
 	} 			
 	else if (msg.type === "update settings")

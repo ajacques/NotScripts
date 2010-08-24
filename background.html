@@ -1,6 +1,5 @@
 <html>
 <head>
-<script src="common/port.js"></script>
 <script src="CHANGE__PASSWORD__HERE.js"></script>
 <script src="common/common.js"></script>
 <script src="common/config.js"></script>
@@ -26,13 +25,13 @@
 	chrome.tabs.onUpdated.addListener(function(tabid, changeinfo, tab) {
 		if (config.get('showPageActionButton'))
 		{	
-			chrome.pageAction.setIcon({path: "IconForbidden.png", tabId: tab.id});
+			chrome.pageAction.setIcon({path: "/Icons/IconForbidden.png", tabId: tab.id});
 			chrome.pageAction.show(tab.id);
 			chrome.tabs.sendRequest(tab.id, {type: "get sources for top window"}, function(response){
 				if (response.pageSourcesAllowedLength > 0 || response.globalAllowAll)
-					chrome.pageAction.setIcon({path: "IconAllowed.png", tabId: tab.id});
+					chrome.pageAction.setIcon({path: "/Icons/IconAllowed.png", tabId: tab.id});
 				else
-					chrome.pageAction.setIcon({path: "IconForbidden.png", tabId: tab.id});	
+					chrome.pageAction.setIcon({path: "/Icons/IconForbidden.png", tabId: tab.id});	
 				chrome.pageAction.show(tab.id);
 			});				
 		}

@@ -73,13 +73,18 @@ parseUri.options = {
 // These are some of the common and known top level domains from Mozilla's http://publicsuffix.org/
 // They are used to remove the subdomains from url's with known top level domains
 // A more complete list will be generated in the future
-const knownTLDsForRegEx = "asia|biz|cat|coop|edu|info|eu.int|int|gov|jobs|mil|mobi|name|tel|travel|aaa.pro|aca.pro|acct.pro|avocat.pro|bar.pro|cpa.pro|jur.pro|law.pro|med.pro|eng.pro|pro|ar.com|br.com|cn.com|de.com|eu.com|gb.com|hu.com|jpn.com|kr.com|no.com|qc.com|ru.com|sa.com|se.com|uk.com|us.com|uy.com|za.com|com|ab.ca|bc.ca|mb.ca|nb.ca|nf.ca|nl.ca|ns.ca|nt.ca|nu.ca|on.ca|pe.ca|qc.ca|sk.ca|yk.ca|gc.ca|ca|gb.net|se.net|uk.net|za.net|net|ae.org|za.org|org|[^\.\/]+\.uk|act.edu.au|nsw.edu.au|nt.edu.au|qld.edu.au|sa.edu.au|tas.edu.au|vic.edu.au|wa.edu.au|act.gov.au|nt.gov.au|qld.gov.au|sa.gov.au|tas.gov.au|vic.gov.au|wa.gov.au|[^\.\/]+\.au";
-const reKnownUrlwTLD = new RegExp("([^\.\/]+\.(" + knownTLDsForRegEx + "))($|\/|:){1}", "i");
-const reKnownTLDs = new RegExp("^(" + knownTLDsForRegEx + ")$", "i");
+const reKnownTLDs = /^(asia|biz|cat|coop|edu|info|eu.int|int|gov|jobs|mil|mobi|name|tel|travel|aaa.pro|aca.pro|acct.pro|avocat.pro|bar.pro|cpa.pro|jur.pro|law.pro|med.pro|eng.pro|pro|ar.com|br.com|cn.com|de.com|eu.com|gb.com|hu.com|jpn.com|kr.com|no.com|qc.com|ru.com|sa.com|se.com|uk.com|us.com|uy.com|za.com|com|ab.ca|bc.ca|mb.ca|nb.ca|nf.ca|nl.ca|ns.ca|nt.ca|nu.ca|on.ca|pe.ca|qc.ca|sk.ca|yk.ca|gc.ca|ca|gb.net|se.net|uk.net|za.net|net|ae.org|za.org|org|[^\.\/]+\.uk|act.edu.au|nsw.edu.au|nt.edu.au|qld.edu.au|sa.edu.au|tas.edu.au|vic.edu.au|wa.edu.au|act.gov.au|nt.gov.au|qld.gov.au|sa.gov.au|tas.gov.au|vic.gov.au|wa.gov.au|[^\.\/]+\.au|de|dk|tv|com.ly|net.ly|gov.ly|plc.ly|edu.ly|sch.ly|med.ly|org.ly|id.ly|ly|xn--55qx5d.hk|xn--wcvs22d.hk|xn--lcvr32d.hk|xn--mxtq1m.hk|xn--gmqw5a.hk|xn--ciqpn.hk|xn--gmq050i.hk|xn--zf0avx.hk|xn--io0a7i.hk|xn--mk0axi.hk|xn--od0alg.hk|xn--od0aq3b.hk|xn--tn0ag.hk|xn--uc0atv.hk|xn--uc0ay4a.hk|com.hk|edu.hk|gov.hk|idv.hk|net.hk|org.hk|hk|ac.cn|com.cn|edu.cn|gov.cn|net.cn|org.cn|mil.cn|xn--55qx5d.cn|xn--io0a7i.cn|xn--od0alg.cn|ah.cn|bj.cn|cq.cn|fj.cn|gd.cn|gs.cn|gz.cn|gx.cn|ha.cn|hb.cn|he.cn|hi.cn|hl.cn|hn.cn|jl.cn|js.cn|jx.cn|ln.cn|nm.cn|nx.cn|qh.cn|sc.cn|sd.cn|sh.cn|sn.cn|sx.cn|tj.cn|xj.cn|xz.cn|yn.cn|zj.cn|hk.cn|mo.cn|tw.cn|cn|edu.tw|gov.tw|mil.tw|com.tw|net.tw|org.tw|idv.tw|game.tw|ebiz.tw|club.tw|xn--zf0ao64a.tw|xn--uc0atv.tw|xn--czrw28b.tw|tw|aichi.jp|akita.jp|aomori.jp|chiba.jp|ehime.jp|fukui.jp|fukuoka.jp|fukushima.jp|gifu.jp|gunma.jp|hiroshima.jp|hokkaido.jp|hyogo.jp|ibaraki.jp|ishikawa.jp|iwate.jp|kagawa.jp|kagoshima.jp|kanagawa.jp|kawasaki.jp|kitakyushu.jp|kobe.jp|kochi.jp|kumamoto.jp|kyoto.jp|mie.jp|miyagi.jp|miyazaki.jp|nagano.jp|nagasaki.jp|nagoya.jp|nara.jp|niigata.jp|oita.jp|okayama.jp|okinawa.jp|osaka.jp|saga.jp|saitama.jp|sapporo.jp|sendai.jp|shiga.jp|shimane.jp|shizuoka.jp|tochigi.jp|tokushima.jp|tokyo.jp|tottori.jp|toyama.jp|wakayama.jp|yamagata.jp|yamaguchi.jp|yamanashi.jp|yokohama.jp|ac.jp|ad.jp|co.jp|ed.jp|go.jp|gr.jp|lg.jp|ne.jp|or.jp|jp|co.in|firm.in|net.in|org.in|gen.in|ind.in|nic.in|ac.in|edu.in|res.in|gov.in|mil.in|in)$/i;
+
+const reKnownUrlwTLD = /([^\.\/]+\.(asia|biz|cat|coop|edu|info|eu.int|int|gov|jobs|mil|mobi|name|tel|travel|aaa.pro|aca.pro|acct.pro|avocat.pro|bar.pro|cpa.pro|jur.pro|law.pro|med.pro|eng.pro|pro|ar.com|br.com|cn.com|de.com|eu.com|gb.com|hu.com|jpn.com|kr.com|no.com|qc.com|ru.com|sa.com|se.com|uk.com|us.com|uy.com|za.com|com|ab.ca|bc.ca|mb.ca|nb.ca|nf.ca|nl.ca|ns.ca|nt.ca|nu.ca|on.ca|pe.ca|qc.ca|sk.ca|yk.ca|gc.ca|ca|gb.net|se.net|uk.net|za.net|net|ae.org|za.org|org|[^\.\/]+\.uk|act.edu.au|nsw.edu.au|nt.edu.au|qld.edu.au|sa.edu.au|tas.edu.au|vic.edu.au|wa.edu.au|act.gov.au|nt.gov.au|qld.gov.au|sa.gov.au|tas.gov.au|vic.gov.au|wa.gov.au|[^\.\/]+\.au|de|dk|tv|com.ly|net.ly|gov.ly|plc.ly|edu.ly|sch.ly|med.ly|org.ly|id.ly|ly|xn--55qx5d.hk|xn--wcvs22d.hk|xn--lcvr32d.hk|xn--mxtq1m.hk|xn--gmqw5a.hk|xn--ciqpn.hk|xn--gmq050i.hk|xn--zf0avx.hk|xn--io0a7i.hk|xn--mk0axi.hk|xn--od0alg.hk|xn--od0aq3b.hk|xn--tn0ag.hk|xn--uc0atv.hk|xn--uc0ay4a.hk|com.hk|edu.hk|gov.hk|idv.hk|net.hk|org.hk|hk|ac.cn|com.cn|edu.cn|gov.cn|net.cn|org.cn|mil.cn|xn--55qx5d.cn|xn--io0a7i.cn|xn--od0alg.cn|ah.cn|bj.cn|cq.cn|fj.cn|gd.cn|gs.cn|gz.cn|gx.cn|ha.cn|hb.cn|he.cn|hi.cn|hl.cn|hn.cn|jl.cn|js.cn|jx.cn|ln.cn|nm.cn|nx.cn|qh.cn|sc.cn|sd.cn|sh.cn|sn.cn|sx.cn|tj.cn|xj.cn|xz.cn|yn.cn|zj.cn|hk.cn|mo.cn|tw.cn|cn|edu.tw|gov.tw|mil.tw|com.tw|net.tw|org.tw|idv.tw|game.tw|ebiz.tw|club.tw|xn--zf0ao64a.tw|xn--uc0atv.tw|xn--czrw28b.tw|tw|aichi.jp|akita.jp|aomori.jp|chiba.jp|ehime.jp|fukui.jp|fukuoka.jp|fukushima.jp|gifu.jp|gunma.jp|hiroshima.jp|hokkaido.jp|hyogo.jp|ibaraki.jp|ishikawa.jp|iwate.jp|kagawa.jp|kagoshima.jp|kanagawa.jp|kawasaki.jp|kitakyushu.jp|kobe.jp|kochi.jp|kumamoto.jp|kyoto.jp|mie.jp|miyagi.jp|miyazaki.jp|nagano.jp|nagasaki.jp|nagoya.jp|nara.jp|niigata.jp|oita.jp|okayama.jp|okinawa.jp|osaka.jp|saga.jp|saitama.jp|sapporo.jp|sendai.jp|shiga.jp|shimane.jp|shizuoka.jp|tochigi.jp|tokushima.jp|tokyo.jp|tottori.jp|toyama.jp|wakayama.jp|yamagata.jp|yamaguchi.jp|yamanashi.jp|yokohama.jp|ac.jp|ad.jp|co.jp|ed.jp|go.jp|gr.jp|lg.jp|ne.jp|or.jp|jp|co.in|firm.in|net.in|org.in|gen.in|ind.in|nic.in|ac.in|edu.in|res.in|gov.in|mil.in|in))($|\/|:){1}/i;
 
 // http://intermapper.ning.com/profiles/blogs/a-regular-expression-for-ipv6
-// www.intermapper.com
-const reIPv6 = new RegExp("^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$", "i");
+// http://www.intermapper.com/ipv6validator
+const reIPv6 =/^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/;
+
+const reInvalidCharsIPv4 = /^[\.\/:]|[\+\^\?\|\*\{\}\$\s\<\>\[\]\/\\%&=;:!#~`,'"]+/i;	
+const reInvalidCharsIPv6 = /^[\.\/]|[\+\^\?\|\*\{\}\$\s\<\>\[\]\/\\%&=;!#~`,'"]+/i;
+const reStartWProtocol = /^[^\.\/:]+:\/\//i;
+	
 
 /*
 Example for http://maps.google.com/something.html or maps.google.com, this returns google.com.
@@ -101,6 +106,7 @@ http://en.wikipedia.org/wiki/IPv6_address#Literal_IPv6_addresses_in_Network_Reso
 	
 Note: The expected input for currURL is a full URL with a leading protocol.
 */
+const RECOGNIZE_IPV6 = false;
 function getPrimaryDomain(currURL)
 {
 	// Sometimes websites create empty elements (empty src) and then change the src which fires another load event
@@ -116,37 +122,55 @@ function getPrimaryDomain(currURL)
 	// Note: Do not use decodeURIComponent since Google Chrome automatically reformats urls formatted with that and it
 	// does not recognize urls as full urls if something has been encoded with encodeURIComponent,
 	// rather they are returned as urls relative to the current page.
-	currURL = decodeURI(currURL.toLowerCase().trim());
+	currURL = decodeURI(currURL).toLowerCase().trim();
 	
-	// Try to parse currURL as an IPv6 address first 
-	var splitIPv6 = currURL.match(/[^\.\/:]+:\/\/([^\/:]+:[^\/:]+@)?\[([a-z0-9:\.]+)\]/i);
-	if (splitIPv6 && splitIPv6.length > 2 && reIPv6.test(splitIPv6[2]))
+	// We have IPv6 here but I'm going to turn it off until IPv6 is more widespread and
+	// more people are familiar with it.
+	if (RECOGNIZE_IPV6)
 	{
-		return splitIPv6[2];
+		// Try to parse currURL as an IPv6 address first 
+		var splitIPv6 = currURL.match(/^([^\.\/:]+:\/\/)*([^\/:]+:[^\/:]+@)?\[([a-z0-9:\.]+)(\/[0-9]+)?\]/i);
+		if (splitIPv6 && splitIPv6.length > 3 && reIPv6.test(splitIPv6[3]))
+		{
+			if (reInvalidCharsIPv6.test(splitIPv6[3]))
+				return null;
+			else
+				return encodeURI(splitIPv6[3]);
+		}
 	}
 	
-	currURL = parseUri(currURL)["host"];
-
+	var parsedUri = parseUri(currURL);
+	var parsedProtocol = parsedUri["protocol"];
+	currURL = parsedUri["host"];
+	if (!currURL || (parsedProtocol && reInvalidCharsIPv4.test(parsedProtocol)))
+		return null;
+		
 	var knownForms = currURL.match(reKnownUrlwTLD);
 	if (knownForms && knownForms.length > 1)
 	{
-		return knownForms[1];
+		if (reInvalidCharsIPv4.test(knownForms[1]))
+			return null;
+		else	
+			return encodeURI(knownForms[1]);
 	}
-	else	// Check for some known invalid types
+	else
 	{
 		var urlRemovedWWW = currURL.match(/^www\.([^\.]+\.[^\/]+)/i);	
 		if (urlRemovedWWW && urlRemovedWWW.length > 1)
 		{
 			// Filters out the common www. in a text style url
-			return urlRemovedWWW[1];
+			if (urlRemovedWWW[1].length < 4 || reInvalidCharsIPv4.test(urlRemovedWWW[1]) || reKnownTLDs.test(urlRemovedWWW[1]))
+				return null;
+			else		
+				return encodeURI(urlRemovedWWW[1]);
 		}
 		else
 		{
 			// Some checking to see if the primary domain contains invalid characters or is a known TLD
-			if (currURL.match(/(^[\.\/:]|[\+\^\?\|\*\{\}\$\s\<\>\[\]\&=;!#~`,'"])/i) || reKnownTLDs.test(currURL))
+			if (currURL < 4 || reInvalidCharsIPv4.test(currURL) || reKnownTLDs.test(currURL))
 				return null;
 			else
-				return currURL;
+				return encodeURI(currURL);
 		}
 	}
 }
@@ -154,30 +178,46 @@ function getPrimaryDomain(currURL)
 
 /*
 Used to determine if a url matches a urlPattern.
-url: URL to be tested. Must be in lower case.
-urlPattern: The pattern to be matched. Must be in lower case.
+url: URL to be tested. This ***MUST*** have come from the output of getPrimaryDomain(..).
+urlPattern: The pattern to be matched. This is highly recommended to have been generated by getPrimaryDomain(..) 
+	but it can also be user supplied from the whitelist page.
 
 Returns: Returns true if url starts with urlPattern. If urlPattern starts with a "^", then regular expression matching is used.
 */
+const reSeparators = /[\.:]/i;
 function patternMatches(url, urlPattern)
 {
-	var coreUrl = getPrimaryDomain(url);
+	var coreUrl = url;
 	
-	if (!coreUrl)
+	if (!coreUrl || !urlPattern)
 		return false;
 	coreUrl = coreUrl.toLowerCase();
-	urlPattern = urlPattern.toLowerCase();		
+	urlPattern = urlPattern.toLowerCase();
+
+	// Ensure that we are not matching a "localhost" type name with something like "example.localhost"
+	if (reSeparators.test(coreUrl) !== reSeparators.test(urlPattern))
+		return false;
 	
 	var endsMatch = false;
 	var matchedIndex = coreUrl.indexOf(urlPattern);		
 	if (matchedIndex >= 0 && (matchedIndex + urlPattern.length) === coreUrl.length)
 	   endsMatch = true;
+	   
+	if (!endsMatch)
+	{
+		matchedIndex = urlPattern.indexOf(coreUrl);		
+		if (matchedIndex >= 0 && (matchedIndex + coreUrl.length) === urlPattern.length)
+		   endsMatch = true;	
+	}
 
 	if (!endsMatch)
 		return false;
 	if (coreUrl.length === urlPattern.length)
 		return true;
-	if (coreUrl.charAt(coreUrl.length - urlPattern.length - 1) === ".")
+		
+	// Check to see that we have a valid separator character where they differ
+	if ((coreUrl.length > urlPattern.length && reSeparators.test(coreUrl.charAt(coreUrl.length - urlPattern.length - 1))) 
+		|| (urlPattern.length > coreUrl.length && reSeparators.test(urlPattern.charAt(urlPattern.length - coreUrl.length - 1))) )
 		return true;
 	return false;
 }
@@ -219,7 +259,7 @@ function randomID()
 Takes in an array and shuffles it randomly in place using the Fisher Yates algorithm
 array: Any array.
 */
-function fisherYatesShuffle ( array ) 
+/*function fisherYatesShuffle ( array ) 
 {
 	if (!array) return;
 	var i = array.length;
@@ -232,7 +272,7 @@ function fisherYatesShuffle ( array )
 		array[i] = tempj;
 		array[j] = tempi;
 	}
-}
+}*/
 
 function injectAnon(f) {
     var script = document.createElement("script");
@@ -259,9 +299,9 @@ function injectGlobalWithId(f, id) {
 function relativeToAbsoluteUrl(url) {
     if(!url)
       return url;
-   
-	if(url.match(/^http|^ftp/))
-        return url;
+		
+	if (reStartWProtocol.test(url))
+		return url;
 		
     // Leading / means absolute path
     if(url[0] == '/')
@@ -322,7 +362,7 @@ function getElUrl(el, type) {
 			
 			if (el.src)
 			{
-				if (el.src.indexOf("http") === 0)
+				if (reStartWProtocol.test(el.src))
 					return el.src;
 				else
 					return codeBase;
@@ -330,7 +370,7 @@ function getElUrl(el, type) {
 			
 			if (el.data)
 			{
-				if (el.data.indexOf("http") === 0)
+				if (reStartWProtocol.test(el.data))
 					return el.data;
 				else
 					return codeBase;				
@@ -338,7 +378,7 @@ function getElUrl(el, type) {
 			
 			if (el.code)
 			{
-				if (el.code.indexOf("http") === 0)
+				if (reStartWProtocol.test(el.code))
 					return el.code;
 				else
 					return codeBase;			
@@ -358,7 +398,7 @@ function getElUrl(el, type) {
 			// If the data attribute is given, we know the source.
 			if (el.data)
 			{
-				if (el.data.indexOf("http") === 0)
+				if (reStartWProtocol.test(el.data))
 					return el.data;
 				else
 					return codeBase;				

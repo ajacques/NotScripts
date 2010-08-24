@@ -23,7 +23,7 @@
 			font-style:italic;
 			color:#000;
 			text-align:center;
-			padding:2px 0px 2px 0px;
+			padding:3px 0px 3px 0px;
 			width:auto;
 			height:auto;
 			overflow: auto;
@@ -56,6 +56,11 @@
 			background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(#FFFFFF), to(#EEE));
 			background:-moz-linear-gradient(0% 90% 90deg, #EEE, #FFF);			
 		}
+		
+		div.urlActionForm:hover {
+			color:#fff;
+			border-color:#3278BE;
+		}		
 
 		div.aRadioSetDiv {
 			padding:0px 0px 5px 0px;
@@ -70,23 +75,46 @@
 			width:auto;
 			margin:0px auto;
 			padding:5px 5px 5px 5px;			
-		}		
+		}
+
+		#divMultiSelect {
+			text-align:center;
+			width:auto;
+			margin:0px 5px 0px 10px;
+			display:none;
+		}
 		
-		div.wrapperSpacer {
+		#cbMultiSelect {
+			font-family: 'Arial', arial, serif;
+			font-size:14px;
+			color:#000;
+		}
+		
+		#wrapperSpacerTop {
 			width:auto;
 			height:auto;
 			margin:0px auto;
-			padding:5px 5px 5px 5px;
+			padding:0px 5px 0px 5px;
 			background: #f5f5f5;
 			display:none;
 			text-align: center;	
-		}	
+		}
+
+		#wrapperSpacerBottom {
+			width:auto;
+			height:auto;
+			margin:0px auto;
+			padding:3px 5px 5px 5px;
+			background: #f5f5f5;
+			display:none;
+			text-align: center;	
+		}			
 
 		button.actionButton {
 			width:300px;
 			height:auto;
 			margin:5px auto;
-			padding: 0px 0px 0px 0px;
+			padding: 1px 2px 1px 2px;
 			display:none;
 			text-align: center;
 			overflow: auto;
@@ -102,12 +130,11 @@
 	<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
 	<script type="text/javascript" src="js/jquery-ui-1.8.4.custom.min.js"></script>	
 	
-	<script src="common/port.js"></script>
 	<script src="CHANGE__PASSWORD__HERE.js"></script>
 	<script src="common/common.js"></script>
 	
 </head>
-<body>
+<body onunload="doTasks();">
 
 <button onclick="chrome.extension.getBackgroundPage().showOptionsPage(); window.close();" id="passwordBad" name="actionButton" class="actionButton">
 	<span style="font-size:36px; color:red;">( ! )</span><br/><br/><span name="pwdProbDescrip">No password set for NotScripts.</span><br/>Will default deny scripts until changed.<br/><br/>Click for instructions.
@@ -116,14 +143,24 @@
 <button onclick="" id="fatalError" name="actionButton" class="actionButton">
 		<span style="font-size:36px; color:red;">( ! )</span><br/><br/>NotScripts encountered invalid encryption for this site's settings / Exceeded storage quota on<br/><br/><span id="fatalErrorUrl" style="font-style:italic;"></span><br/>Click here to reload<br/> the current web page<br/>to try again.<br/><br/>Otherwise, please clear/enable the browser HTML5 storage.
 </button>
+
+<button onclick="chrome.extension.getBackgroundPage().clearSettings(); updateCurrentOnUnload=false; chrome.tabs.executeScript(null, {code:'window.location.reload();'});  window.close();" id="extFatalError" name="actionButton" class="actionButton">
+		<span style="font-size:36px; color:red;">( ! )</span><br/><br/>NotScripts encountered corrupted settings data in Google Chrome / Exceeded extension storage quota in Google Chrome.<br/><br/>Click here to clear<br/>the NotScripts settings lists<br/>to try to solve the problem.<br/><br/>Otherwise, please ensure Google Chrome has javascript and HTML5 storage enabled.<br/><br/>Contact the author of NotScripts if you repeatedly get this message.
+</button>
  
+<button id="revokeAllTemp" name="actionButton" class="actionButton">Revoke All Temporary</button>	 
+<div id="divMultiSelect">
+	<input type="checkbox" id="cbMultiSelect" name="cbMultiSelect" onclick="bgPage.config.set('multiSelect', this.checked)"; />
+	<label for="cbMultiSelect">Multi-Select Sites</label>
+</div>
+
 <div id="wrapperSpacerTop" class="wrapperSpacer"><hr/></div> 	
 <div id="wrapperSpacerBottom" class="wrapperSpacer"><hr/></div>
-<button id="allowAllShown" name="actionButton" class="actionButton">Allow All Shown</button>
-<button id="tempAllowAllShown" name="actionButton" class="actionButton">Temporarily Allow Shown</button>	
-<button id="blockAllShown" name="actionButton" class="actionButton">Block All Shown</button>				 	
+
+<button id="tempAllowAllShown" name="actionButton" class="actionButton" onclick="tempAllowShownBlocked();">Temporarily Allow Shown Blocked</button>	
+<button id="allowAllShown" name="actionButton" class="actionButton" onclick="allowAllShown();">Allow All Shown</button>
+<button id="blockAllShown" name="actionButton" class="actionButton" onclick="blockAllShown();">Block All Shown</button>				 	
 <button id="globalAllowTemp" name="actionButton" class="actionButton">Globally Allow All Temporarily</button>			
-<button id="revokeAllTemp" name="actionButton" class="actionButton">Revoke All Temporary</button>
 
 <div id="bottomLinks">
 	<a href="#" onclick="chrome.extension.getBackgroundPage().showOptionsPage(); window.close();">Options</a>
@@ -137,21 +174,23 @@
 var currTabId = null;
 
 var fatalErrorButton = document.getElementById("fatalError");
+var extFatalErrorButton = document.getElementById("extFatalError");
 var passwordBadButton = document.getElementById("passwordBad");
 var spacerTopDiv = document.getElementById("wrapperSpacerTop");
 var spacerBottomDiv = document.getElementById("wrapperSpacerBottom");
 
-var allowAllShown = document.getElementById("allowAllShown");
-var blockAllShown = document.getElementById("blockAllShown");
-var tempAllowAllShown = document.getElementById("tempAllowAllShown");
+var multiSelectCB = document.getElementById("cbMultiSelect");
+var multiSelectDiv = document.getElementById("divMultiSelect");
+
+var allowAllShownButton = document.getElementById("allowAllShown");
+var blockAllShownButton = document.getElementById("blockAllShown");
+var tempAllowShownBlockedButton = document.getElementById("tempAllowAllShown");
 var globalAllowTempButton = document.getElementById("globalAllowTemp");
 var revokeAllTempButton = document.getElementById("revokeAllTemp");
 
 $("button[name=actionButton]").button();
 
 var encounteredError = false;
-var arrayOfShownUrls = new Array();
-
 const bgPage = chrome.extension.getBackgroundPage();
 
 var passwordStatus = isPasswordGood();
@@ -182,6 +221,11 @@ if (passwordStatus !== PASSWORD_STATUS.okay)
 	}
 	passwordBadButton.style.display = "block";
 }
+else if (bgPage.extFatalError)
+{
+	extFatalErrorButton.style.display = "block";
+	spacerTopDiv.style.display = "block";
+}
 else
 {
 	chrome.extension.onRequest.addListener(function(msg, src, send) {
@@ -206,6 +250,8 @@ else
 		}
 	);
 }
+
+
 
 function chunkUrlForDisplay(currBlockedURL)
 {
@@ -236,38 +282,63 @@ const URL_LIST_TYPE = {
 	"blocked": 2
 }
 
+function limitUrlLength(currBlockedURL)
+{
+	return (currBlockedURL.length >= 300 ? currBlockedURL.substring(0, 299) + "......<<CUT OFF, TOO LONG>>" : currBlockedURL);
+}
+
+function fixAlreadyShown(currBlockedURL)
+{
+	var isAlreadyShown = false;
+	var docEls = document.getElementsByName("urlActionForm");
+	for (var i = 0; i < docEls.length; i++)
+	{
+		var currDataUrl = docEls[i].childNodes[1].childNodes[0].getAttribute("data-url");
+		//console.log("outside  " + currBlockedURL + "    " + currDataUrl);
+		if (patternMatches(currBlockedURL, currDataUrl))
+		{
+			//console.log("matches    " + currBlockedURL  + "    " + currDataUrl);
+			if (currBlockedURL.length < currDataUrl.length)
+			{
+				var currUrlTitleEl = docEls[i].childNodes[0];
+				var currRBs = docEls[i].childNodes[1].childNodes;	// Goes in multiples of 2			
+				currUrlTitleEl.innerText = limitUrlLength(currBlockedURL);
+				currRBs[0].setAttribute("data-url", currBlockedURL);								
+				currRBs[2].setAttribute("data-url", currBlockedURL);
+				currRBs[4].setAttribute("data-url", currBlockedURL);
+			}
+
+			isAlreadyShown = true;								
+		}		
+	}
+	return isAlreadyShown;	
+}
+
 function addButtonsFromUrlList(urlList, urlListType)
 {
 	if (urlList)
 	{
 		for (var i = 0; i < urlList.length; i++)
 		{
+			// Note: It is expected and important that the urlList is already encoded with encodeURI,
+			// which it should be if urlList was filled using only returned values from getPrimaryDomain(...)
+			// Otherwise, we will have unexpected formatting when rendering the text if should tries forming malicious strings.
 			var currBlockedURL = urlList[i];
-
+			
 			if (currBlockedURL)
-			{		
-				currBlockedURL = encodeURI(currBlockedURL);
-
-				var isAlreadyShown = false;
-				for (var k = 0; k < arrayOfShownUrls.length; k++)
-				{
-					if (currBlockedURL === arrayOfShownUrls[k])
-					{
-						isAlreadyShown = true;
-						break;
-					}
-				}
-				if (isAlreadyShown) continue;
-				else arrayOfShownUrls.push(currBlockedURL);
+			{					
+				if (fixAlreadyShown(currBlockedURL))
+					continue;				
 				
 				var aForm = document.createElement("div");
 				aForm.className = "urlActionForm";
+				aForm.setAttribute("name", "urlActionForm");
 				var aRadioSetDiv = document.createElement("div");
 				aRadioSetDiv.className = "aRadioSetDiv";				
 		
 				var divUrl = document.createElement("div");
 				divUrl.className = "urlTitle";
-				divUrl.innerText = (currBlockedURL.length >= 300 ? currBlockedURL.substring(0, 299) + "......<<CUT OFF, TOO LONG>>" : currBlockedURL);
+				divUrl.innerText = limitUrlLength(currBlockedURL);
 				aForm.appendChild(divUrl);				
 				
 				var rbGroupName = randomID();
@@ -277,7 +348,7 @@ function addButtonsFromUrlList(urlList, urlListType)
 				rbAlwaysAllow.id = randomID();
 				rbAlwaysAllow.name = rbGroupName;
 				rbAlwaysAllow.setAttribute("data-url", currBlockedURL);
-				rbAlwaysAllow.onclick = function(){addSite(this.getAttribute("data-url"));};
+				rbAlwaysAllow.onclick = addSite;
 				if (urlListType === URL_LIST_TYPE.allowed) rbAlwaysAllow.checked = true;				
 				aRadioSetDiv.appendChild(rbAlwaysAllow);
 				var labelAlwaysAllow = document.createElement("label");
@@ -285,31 +356,31 @@ function addButtonsFromUrlList(urlList, urlListType)
 				labelAlwaysAllow.innerText = "Allow";
 				aRadioSetDiv.appendChild(labelAlwaysAllow);
 				
-				var rbTempAllow = document.createElement("input");
-				rbTempAllow.type = "radio";
-				rbTempAllow.id = randomID();
-				rbTempAllow.name = rbGroupName;
-				rbTempAllow.setAttribute("data-url", currBlockedURL);
-				//rbTempAllow.onclick = function(){addSite(this.getAttribute("data-url"));};	
-				if (urlListType === URL_LIST_TYPE.tempAllowed) rbTempAllow.checked = true;
-				aRadioSetDiv.appendChild(rbTempAllow);
-				var labelTempAllow = document.createElement("label");
-				labelTempAllow.setAttribute("for", rbTempAllow.id);
-				labelTempAllow.innerText = "Temporarily Allow";
-				aRadioSetDiv.appendChild(labelTempAllow);
-
 				var rbBlock = document.createElement("input");
 				rbBlock.type = "radio";
 				rbBlock.id = randomID();
 				rbBlock.name = rbGroupName;
 				rbBlock.setAttribute("data-url", currBlockedURL);
-				rbBlock.onclick = function(){removeSite(this.getAttribute("data-url"));};
+				rbBlock.onclick = removeSite;
 				if (urlListType === URL_LIST_TYPE.blocked) rbBlock.checked = true;				
 				aRadioSetDiv.appendChild(rbBlock);
 				var labelBlock = document.createElement("label");
 				labelBlock.setAttribute("for", rbBlock.id);
-				labelBlock.innerText = "Block";
-				aRadioSetDiv.appendChild(labelBlock);				
+				labelBlock.innerText = "Block From Site";
+				aRadioSetDiv.appendChild(labelBlock);					
+				
+				var rbTempAllow = document.createElement("input");
+				rbTempAllow.type = "radio";
+				rbTempAllow.id = randomID();
+				rbTempAllow.name = rbGroupName;
+				rbTempAllow.setAttribute("data-url", currBlockedURL);
+				rbTempAllow.onclick = tempAllowSite;
+				if (urlListType === URL_LIST_TYPE.tempAllowed) rbTempAllow.checked = true;
+				aRadioSetDiv.appendChild(rbTempAllow);
+				var labelTempAllow = document.createElement("label");
+				labelTempAllow.setAttribute("for", rbTempAllow.id);
+				labelTempAllow.innerText = "Temp";
+				aRadioSetDiv.appendChild(labelTempAllow);			
 				
 				$(aRadioSetDiv).buttonset();
 				
@@ -329,38 +400,51 @@ function showLastBlocked(response)
 		
 		var currBlockedURL = encodeURI(response.url ? response.url : "");
 		document.getElementById("fatalErrorUrl").innerText = chunkUrlForDisplay(currBlockedURL);	
-		fatalErrorButton.onclick=function() { chrome.tabs.executeScript(currTabId, {code:'window.location.reload();'}); window.close();}
+		fatalErrorButton.onclick = reloadCurrentAndClose;
 		fatalErrorButton.style.display = "block";
 		spacerTopDiv.style.display = "block";
 	}
-
+	
 	// Toggling on/off
 	if (response.globalAllowAll)
 	{
-		revokeAllTempButton.style.display = "block";
-		revokeAllTempButton.onclick = function(){toggleOnOff(false);};
+		revokeAllTempButton.style.margin = "30px auto 10px auto";
+		revokeAllTempButton.setAttribute("data-newState", "false");
+		revokeAllTempButton.style.display = "block";		
+		revokeAllTempButton.onclick = toggleOnOff;
 	}
 	else
 	{
+		multiSelectDiv.style.display = "block";
+		multiSelectCB.checked = bgPage.config.get('multiSelect');
+		spacerTopDiv.style.display = "block";
+		
+		if (bgPage.tempAllowList.length > 0)
+		{
+			revokeAllTempButton.innerText = "Revoke Temporary From\n" + bgPage.tempAllowList.length + " Site(s)\nin All Pages";
+			revokeAllTempButton.style.padding = "7px 2px 7px 2px";
+			revokeAllTempButton.setAttribute("data-newState", "false");
+			revokeAllTempButton.style.display = "block";
+			revokeAllTempButton.onclick = toggleOnOff;
+		}
+		
 		spacerBottomDiv.style.display = "block";
 		if (response.pageSourcesForbidden && response.pageSourcesForbidden.length > 0)
 		{
-			allowAllShown.style.display = "block";
-			//allowAllShown.onclick = function(){};
-			
-			tempAllowAllShown.style.display = "block";
-			//tempAllowAllShown.onclick = function(){};
+			allowAllShownButton.style.display = "block";			
+			tempAllowShownBlockedButton.style.display = "block";
 		}
 		
 		if (response.pageSourcesAllowed && response.pageSourcesAllowed.length > 0)
 		{
-			blockAllShown.style.display = "block";
-			//blockAllShown.onclick = function(){};		
+			blockAllShownButton.style.display = "block";	
 		}
 	
+		globalAllowTempButton.setAttribute("data-newState", "true");
 		globalAllowTempButton.style.display = "block";
-		globalAllowTempButton.onclick = function(){toggleOnOff(true);};
+		globalAllowTempButton.onclick = toggleOnOff;
 
+		addButtonsFromUrlList(response.pageSourcesTempAllowed, URL_LIST_TYPE.tempAllowed);
 		addButtonsFromUrlList(response.pageSourcesAllowed, URL_LIST_TYPE.allowed);
 		addButtonsFromUrlList(response.pageSourcesForbidden, URL_LIST_TYPE.blocked);	
 	}
@@ -373,32 +457,109 @@ function showLastBlocked(response)
 	}	
 }
 
-function removeSite(url) {
-	bgPage.revokeUrl(url);
-	updateCurrentTab(false);
+var updateCurrentOnUnload = false;
+
+function doTasks()
+{
+	if (updateCurrentOnUnload)
+		bgPage.updateAllTabs(false);
+		//bgPage.updateTab(currTabId);
 }
 
-function addSite(url) {
+function tempAllowSite()
+{
+	var url = this.getAttribute("data-url");
+	bgPage.tempListPermitUrl(url);
 	
-	if (!bgPage.isAllowed(url))
-		bgPage.permitUrl(url);
-
-	updateCurrentTab(false);
+	if (multiSelectCB.checked)
+		updateCurrentOnUnload = true;
+	else
+		updateAllTabs(false);
+		//updateCurrentTab(false);
 }
 
-function toggleOnOff(newState) {	
+function removeSite() {
+	var url = this.getAttribute("data-url");
+	bgPage.revokeUrl(url);
+	
+	if (multiSelectCB.checked)
+		updateCurrentOnUnload = true;
+	else
+		updateAllTabs(false);
+		//updateCurrentTab(false);	
+}
+
+function addSite() {	
+	var url = this.getAttribute("data-url");
+	if (!bgPage.isWhitelisted(url))
+		bgPage.permitUrl(url);		
+
+	if (multiSelectCB.checked)
+		updateCurrentOnUnload = true;
+	else
+		updateAllTabs(false);
+		//updateCurrentTab(false);
+}
+
+function blockAllShown()
+{
+	var docEls = document.getElementsByName("urlActionForm");
+	for (var i = 0; i < docEls.length; i++)
+	{
+		bgPage.revokeUrl(docEls[i].childNodes[1].childNodes[0].getAttribute("data-url"));
+	}
+
+	updateCurrentOnUnload = false;
+	updateAllTabs(false);
+}
+
+function allowAllShown()
+{
+	var docEls = document.getElementsByName("urlActionForm");
+	for (var i = 0; i < docEls.length; i++)
+	{
+		bgPage.permitUrl(docEls[i].childNodes[1].childNodes[0].getAttribute("data-url"));
+	}
+
+	updateCurrentOnUnload = false;
+	updateAllTabs(false);
+}
+
+function tempAllowShownBlocked()
+{
+	var docEls = document.getElementsByName("urlActionForm");
+	for (var i = 0; i < docEls.length; i++)
+	{
+		// The second childNodes goes in multiples of 2 because jQuery renders an element over the radio boxes
+		if (!docEls[i].childNodes[1].childNodes[0].checked)
+			bgPage.tempListPermitUrl(docEls[i].childNodes[1].childNodes[0].getAttribute("data-url"));
+	}
+	
+	updateCurrentOnUnload = false;
+	updateAllTabs(false);
+}
+
+
+function toggleOnOff() {	
+	var newState = this.getAttribute("data-newState") === "true" ? true : false;
+	// We have to manually refresh the variables we use to cache the session storages vars
+	// because they don't fire the same way as local storage
 	bgPage.sessionConfig.set('globalAllowAll', newState);
+	bgPage.urlsGloballyAllowed = bgPage.sessionConfig.get("globalAllowAll");
 	bgPage.sessionConfig.set('tempAllowList', []);
+	bgPage.tempAllowList = bgPage.sessionConfig.get('tempAllowList');
 	
 	updateAllTabs(false);
-	//updateCurrentTab(false);
 }
 
 function updateCurrentTab(refreshLists)
 {
 	if (refreshLists)
+	{
 		bgPage.whitelist = bgPage.config.get("whitelist");
-		
+		bgPage.tempAllowList = bgPage.config.get("tempAllowList");
+	}
+
 	chrome.tabs.sendRequest(currTabId, 
 		{"type": "update settings", 
 			"tempVals": {"globalAllowAll": bgPage.sessionConfig.get("globalAllowAll"), "tempAllowList": bgPage.tempAllowList},
@@ -409,10 +570,11 @@ function updateCurrentTab(refreshLists)
 
 function updateAllTabs(refreshLists) {
 	chrome.windows.getAll({populate: true}, function(windowsArray) {
-		bgPage.urlsGloballyAllowed = bgPage.sessionConfig.get("globalAllowAll");
-		
 		if (refreshLists)
-			bgPage.whitelist = bgPage.config.get('whitelist');	
+		{
+			bgPage.whitelist = bgPage.config.get('whitelist');
+		}
+		
 		var shouldReload = bgPage.config.get('reloadCurrentTabOnToggle');
 		for (var i = 0; i < windowsArray.length; i++)
 		{
@@ -421,7 +583,7 @@ function updateAllTabs(refreshLists) {
 			{
 				chrome.tabs.sendRequest(currWindow.tabs[j].id, 
 					{"type": "update settings", 
-						"tempVals": {"globalAllowAll": bgPage.sessionConfig.get("globalAllowAll"), "tempAllowList": bgPage.tempAllowList},
+						"tempVals": {"globalAllowAll": bgPage.urlsGloballyAllowed, "tempAllowList": bgPage.tempAllowList},
 						"whitelist": bgPage.whitelist, 
 						"reload": shouldReload
 					});							
@@ -429,6 +591,12 @@ function updateAllTabs(refreshLists) {
 		}
 		window.close();
 	});
+}
+
+function reloadCurrentAndClose()
+{
+	chrome.tabs.executeScript(currTabId, {code:'window.location.reload();'}); 
+	window.close();
 }
 </script>
 
