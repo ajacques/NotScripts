@@ -7,14 +7,14 @@
 
 <script type = "text/javascript">
 		
-	if (config.get('currVersion') < 9002)
+	if (config.get('currVersion') < 9003)
 	{	
 		// Because we introduced lastVersion in 9001
 		if (config.get('currVersion') == 9000)
 			config.set('lastVersion', 9000);
 			
-		config.set('currVersion', 9002);
-		config.set('currDisplayVersion', "0.9.2");
+		config.set('currVersion', 9003);
+		config.set('currDisplayVersion', "0.9.3");
 	}
 	
 	if (isPasswordGood() !== PASSWORD_STATUS.okay)
@@ -25,13 +25,13 @@
 	chrome.tabs.onUpdated.addListener(function(tabid, changeinfo, tab) {
 		if (config.get('showPageActionButton'))
 		{	
-			chrome.pageAction.setIcon({path: "/Icons/IconForbidden.png", tabId: tab.id});
+			chrome.pageAction.setIcon({path: "Icons/IconForbidden.png", tabId: tab.id});
 			chrome.pageAction.show(tab.id);
 			chrome.tabs.sendRequest(tab.id, {type: "get sources for top window"}, function(response){
 				if (response.pageSourcesAllowedLength > 0 || response.globalAllowAll)
-					chrome.pageAction.setIcon({path: "/Icons/IconAllowed.png", tabId: tab.id});
+					chrome.pageAction.setIcon({path: "Icons/IconAllowed.png", tabId: tab.id});
 				else
-					chrome.pageAction.setIcon({path: "/Icons/IconForbidden.png", tabId: tab.id});	
+					chrome.pageAction.setIcon({path: "Icons/IconForbidden.png", tabId: tab.id});	
 				chrome.pageAction.show(tab.id);
 			});				
 		}
