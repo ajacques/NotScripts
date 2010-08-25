@@ -33,6 +33,7 @@ var config = {
             if (!this.has(key)) {
 				this.set(key, vals[key]);
             }
+			// Need to test below on Linux
 			else	// In case our data gets corrupted during end user use
 			{
 				var currVal = this.get(key);

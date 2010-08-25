@@ -7,6 +7,10 @@ String.prototype.chunk = function(n) {
 	return this.match(RegExp('.{1,'+n+'}','g'));
 };
 
+function isArray(o) {
+  return Object.prototype.toString.call(o) === '[object Array]'; 
+}
+
 
 const MIN_PASSWORD_LENGTH = 20;
 const MAX_PASSWORD_LENGTH = 100;
@@ -123,6 +127,11 @@ function getPrimaryDomain(currURL)
 	// does not recognize urls as full urls if something has been encoded with encodeURIComponent,
 	// rather they are returned as urls relative to the current page.
 	currURL = decodeURI(currURL).toLowerCase().trim();
+	var removeExtra = currURL.match(/^([^\.\/:]+:\/\/)*([^\/])+(\/|:|$)/i);
+	if (removeExtra && removeExtra.length > 0)
+		currURL = removeExtra[0];
+	else
+		return null;
 	
 	// We have IPv6 here but I'm going to turn it off until IPv6 is more widespread and
 	// more people are familiar with it.
@@ -155,6 +164,7 @@ function getPrimaryDomain(currURL)
 	}
 	else
 	{
+		//currURL = decodeURI(currURL);
 		var urlRemovedWWW = currURL.match(/^www\.([^\.]+\.[^\/]+)/i);	
 		if (urlRemovedWWW && urlRemovedWWW.length > 1)
 		{

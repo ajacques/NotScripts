@@ -92,8 +92,14 @@ var blockSettings = {
 };
 
 // Set the default whitelist if it doesn't exist
-if (!blockSettings.has(NAME_NOTSCRIPTS_WHITELIST) || !blockSettings.get(NAME_NOTSCRIPTS_WHITELIST)) {
-	blockSettings.set(NAME_NOTSCRIPTS_WHITELIST, new Array());
+if (!blockSettings.has(NAME_NOTSCRIPTS_WHITELIST)) {
+	blockSettings.set(NAME_NOTSCRIPTS_WHITELIST, []);
+}
+var NotScripts_Whitelist = blockSettings.get(NAME_NOTSCRIPTS_WHITELIST);
+if (!isArray(NotScripts_Whitelist))
+{
+	blockSettings.set(NAME_NOTSCRIPTS_WHITELIST, []);
+	NotScripts_Whitelist = [];
 }
 	
 var sessionBlockSettings = {
@@ -143,8 +149,14 @@ var sessionBlockSettings = {
 };
 	
 // Set the default allow value if it doesn't exist
-if (!sessionBlockSettings.has(NAME_NOTSCRIPTS_ALLOWED) || !sessionBlockSettings.get(NAME_NOTSCRIPTS_ALLOWED)) {
+if (!sessionBlockSettings.has(NAME_NOTSCRIPTS_ALLOWED)) {
 	sessionBlockSettings.set(NAME_NOTSCRIPTS_ALLOWED, {"globalAllowAll": false, "tempAllowList": []});
+}
+var NotScripts_Allowed = sessionBlockSettings.get(NAME_NOTSCRIPTS_ALLOWED);
+if (typeof NotScripts_Allowed === 'undefined' || NotScripts_Allowed === null)
+{
+	sessionBlockSettings.set(NAME_NOTSCRIPTS_ALLOWED, {"globalAllowAll": false, "tempAllowList": []});
+	NotScripts_Allowed = {"globalAllowAll": false, "tempAllowList": []};
 }
 
 if (OUT_PUT_LOG)
@@ -172,8 +184,6 @@ if (OUT_PUT_LOG)
 var pageSourcesAllowed = new Array();
 var pageSourcesTempAllowed = new Array();
 var pageSourcesForbidden = new Array();
-var NotScripts_Allowed = sessionBlockSettings.get(NAME_NOTSCRIPTS_ALLOWED);
-var NotScripts_Whitelist = blockSettings.get(NAME_NOTSCRIPTS_WHITELIST);
 
 function isWhitelisted(url) {
 	return islisted(NotScripts_Whitelist, url);	

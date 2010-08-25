@@ -7,14 +7,14 @@
 
 <script type = "text/javascript">
 		
-	if (config.get('currVersion') < 9003)
+	if (config.get('currVersion') < 9005)
 	{	
 		// Because we introduced lastVersion in 9001
 		if (config.get('currVersion') == 9000)
 			config.set('lastVersion', 9000);
 			
-		config.set('currVersion', 9003);
-		config.set('currDisplayVersion', "0.9.3");
+		config.set('currVersion', 9005);
+		config.set('currDisplayVersion', "0.9.5");
 	}
 	
 	if (isPasswordGood() !== PASSWORD_STATUS.okay)

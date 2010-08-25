@@ -18,6 +18,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+NotScripts 0.9.5 August 24th, 2010
+	Bug Fix: (Reported by Eric) Corrected path for icons some Linux systems were having trouble with.
+	Bug Fix: (Reported by Tim) Corrected parsing of the @ symbol in a url that could have lead to the wrong domain being recognized.
+
 NotScripts 0.9.2 August 24th, 2010
 	Major release.
 	New: Temporarily allow this features along with a redesigned drop down menu.
