@@ -33,7 +33,6 @@ var config = {
             if (!this.has(key)) {
 				this.set(key, vals[key]);
             }
-			// Need to test below on Linux
 			else	// In case our data gets corrupted during end user use
 			{
 				var currVal = this.get(key);
@@ -45,9 +44,9 @@ var config = {
 };
 
 config.defaults({
-
     whitelist: ["google.com", "google.ca", "google.co.uk", "google.com.au", "googleapis.com", "gstatic.com", "youtube.com", "ytimg.com", 
 		"live.com", "microsoft.com", "hotmail.com", "apple.com", "yahooapis.com", "yimg.com"],
+	whitelistHash: "",
 	
 	reloadCurrentTabOnToggle: true,
 	showPageActionButton: true,
@@ -58,9 +57,12 @@ config.defaults({
 	
 	multiSelect: false,
 	
-	// Black list mode not current implemented
+	hideHarmfulSearches: true,
+	
+	// Blacklist mode not currently implemented
 	useBlacklistMode: false,
-	blacklist: []
+	blacklist: [],
+	blacklistHash: ""
 });
 
 var sessionConfig = {
@@ -97,76 +99,285 @@ var sessionConfig = {
 
 sessionConfig.defaults({
 	tempAllowList: [],
+	tempAllowListHash: "",
 	globalAllowAll: false
 });
 
+
 var whitelist = config.get('whitelist');
+if (!sortUrlList(whitelist))	// in place sort
+{
+	whitelist = [];
+	config.set('whitelist', []);
+}
+else
+{
+	removeDuplicatesInArray(whitelist);
+	config.set('whitelist', whitelist);
+}
+config.set("whitelistHash", Crypto.MD5(whitelist.toString()));
+
+var blacklist = config.get('blacklist');
+if (!sortUrlList(blacklist))	// in place sort
+{
+	blacklist = [];
+	config.set('blacklist', []);
+}
+else
+{
+	removeDuplicatesInArray(blacklist);
+	config.set('blacklist', blacklist);
+}
+config.set("blacklistHash", Crypto.MD5(blacklist.toString()));
+
 var tempAllowList = sessionConfig.get('tempAllowList');
-var urlsGloballyAllowed = sessionConfig.get('globalAllowAll');
+if (!sortUrlList(tempAllowList))	// in place sort
+{
+	tempAllowList = [];
+	sessionConfig.set('tempAllowList', []);
+}
+else
+{
+	removeDuplicatesInArray(tempAllowList);
+	sessionConfig.set('tempAllowList', tempAllowList);
+}
+sessionConfig.set("tempAllowListHash", Crypto.MD5(tempAllowList.toString()));
+
 
 function clearSettings()
 {
 	extFatalError = false;
-	sessionConfig.set("tempAllowList", []);
-	config.set("blacklist", []);
+	
 	config.set("whitelist", []);
+	config.set("whitelistHash", EMPTY_MD5);
+	
+	config.set("blacklist", []);
+	config.set("blacklistHash", EMPTY_MD5);
+	
+	sessionConfig.set("tempAllowList", []);
+	sessionConfig.set("tempAllowListHash", EMPTY_MD5);
+	
 	window.location.reload();
 }
 
-function handleStorageChange(event)
+function reloadExt()
 {
-	if (event.key === "whitelist")
+	window.location.reload();
+}
+
+/*
+Called by the drop down menu to toggle temporary permissions on and off.
+*/
+function toggleOnOff(newState) {
+	sessionConfig.set('globalAllowAll', newState);
+	tempAllowList = [];
+	sessionConfig.set('tempAllowList', tempAllowList);
+	sessionConfig.set("tempAllowListHash", EMPTY_MD5);
+}
+
+function updateLists()
+{
+	switch(blocking_mode)
 	{
-		whitelist = config.get('whitelist');
+		case BMODE_TYPES.BLACKLIST:
+		{
+			config.set("blacklist", blacklist);
+			config.set("blacklistHash", Crypto.MD5(blacklist.toString()));	
+			sessionConfig.set("tempAllowList", tempAllowList);	
+			sessionConfig.set("tempAllowListHash", Crypto.MD5(tempAllowList.toString()));
+			break;
+		}
+		case BMODE_TYPES.WHITELIST_ALLOW_TOP_LEVEL:
+		{
+			config.set("whitelist", whitelist);
+			config.set("whitelistHash", Crypto.MD5(whitelist.toString()));
+			config.set("blacklist", blacklist);
+			config.set("blacklistHash", Crypto.MD5(blacklist.toString()));	
+			sessionConfig.set("tempAllowList", tempAllowList);	
+			sessionConfig.set("tempAllowListHash", Crypto.MD5(tempAllowList.toString()));
+		}
+		default:	// BMODE_TYPES.WHITELIST
+		{
+			config.set("whitelist", whitelist);
+			config.set("whitelistHash", Crypto.MD5(whitelist.toString()));
+			sessionConfig.set("tempAllowList", tempAllowList);	
+			sessionConfig.set("tempAllowListHash", Crypto.MD5(tempAllowList.toString()));	
+			break;
+		}
 	}
-	else if (event.key === "tempAllowList")
+}
+
+function permitUrl(urls)
+{
+	switch(blocking_mode)
 	{
-		tempAllowList = sessionConfig.get('tempAllowList');
+		case BMODE_TYPES.BLACKLIST:
+		{
+			for (var i = 0; i < urls.length; i++)
+			{
+				removeFromList(tempAllowList, "tempAllowList", urls[i], true);
+				removeFromList(blacklist, "blacklist", urls[i], false);	
+			}
+			break;
+		}
+		case BMODE_TYPES.WHITELIST_ALLOW_TOP_LEVEL:
+		{
+			for (var i = 0; i < urls.length; i++)
+			{
+				removeFromList(tempAllowList, "tempAllowList", urls[i], true);
+				removeFromList(blacklist, "blacklist", urls[i], false);	
+				addToList(whitelist, "whitelist", urls[i], false);	
+			}
+		}
+		default:	// BMODE_TYPES.WHITELIST
+		{
+			for (var i = 0; i < urls.length; i++)
+			{
+				removeFromList(tempAllowList, "tempAllowList", urls[i], true);
+				addToList(whitelist, "whitelist", urls[i], false);	
+			}
+			break;
+		}
 	}	
-	else if (event.key === "globalAllowAll")
+	updateLists();
+}
+
+function revokeUrl(urls)
+{	
+	switch(blocking_mode)
 	{
-		urlsGloballyAllowed = sessionConfig.get('globalAllowAll');
+		case BMODE_TYPES.BLACKLIST:
+		{
+			for (var i = 0; i < urls.length; i++)
+			{
+				removeFromList(tempAllowList, "tempAllowList", urls[i], true);
+				addToList(blacklist, "blacklist", urls[i], false);
+			}
+			break;
+		}
+		case BMODE_TYPES.WHITELIST_ALLOW_TOP_LEVEL:
+		{
+			for (var i = 0; i < urls.length; i++)
+			{
+				removeFromList(whitelist, "whitelist", urls[i], false);
+				removeFromList(tempAllowList, "tempAllowList", urls[i], true);
+				addToList(blacklist, "blacklist", urls[i], false);
+			}
+		}
+		default:	// BMODE_TYPES.WHITELIST
+		{
+			for (var i = 0; i < urls.length; i++)
+			{
+				removeFromList(whitelist, "whitelist", urls[i], false);
+				removeFromList(tempAllowList, "tempAllowList", urls[i], true);
+			}
+			break;
+		}
 	}	
+	updateLists();	
 }
 
-window.addEventListener("storage", handleStorageChange, false);
-
-function isWhitelisted(url)
+/*
+Only called when in BMODE_TYPES.WHITELIST_ALLOW_TOP_LEVEL
+*/
+function sameSiteUrl(urls)
 {
-	return islisted(whitelist, url)
+	for (var i = 0; i < urls.length; i++)
+	{
+		removeFromList(whitelist, "whitelist", urls[i], false);
+		removeFromList(tempAllowList, "tempAllowList", urls[i], true);
+		removeFromList(blacklist, "blacklist", urls[i], false);
+	}
+	updateLists();
 }
 
-function isTempListed(url)
+function tempPermitUrl(urls)
 {
-	return islisted(tempAllowList, url)
+	switch(blocking_mode)
+	{
+		case BMODE_TYPES.BLACKLIST:
+		{
+			for (var i = 0; i < urls.length; i++)
+			{
+				addToList(blacklist, "blacklist", urls[i], false);
+				addToList(tempAllowList, "tempAllowList", urls[i], true);
+			}
+			break;
+		}
+		case BMODE_TYPES.WHITELIST_ALLOW_TOP_LEVEL:
+		{
+			for (var i = 0; i < urls.length; i++)
+			{
+				removeFromList(whitelist, "whitelist", urls[i], false);
+				removeFromList(blacklist, "blacklist", urls[i], false);
+				addToList(tempAllowList, "tempAllowList", urls[i], true);				
+			}
+		}
+		default:	// BMODE_TYPES.WHITELIST
+		{
+			for (var i = 0; i < urls.length; i++)
+			{
+				removeFromList(whitelist, "whitelist", urls[i], false);
+				addToList(tempAllowList, "tempAllowList", urls[i], true);
+			}
+			break;
+		}
+	}	
+	updateLists();	
 }
 
-function isAllowed(url)
-{
-	return islisted(whitelist, url) || islisted(tempAllowList, url);
-}
-
-function permitUrl(url)
-{
-	removeFromList(tempAllowList, "tempAllowList", url, true);
-	addToList(whitelist, "whitelist", url, false);
-}
-
-function revokeUrl(url)
-{
-	removeFromList(whitelist, "whitelist", url, false);
-	removeFromList(tempAllowList, "tempAllowList", url, true);
-}
-
-function tempListPermitUrl(url)
-{
-	removeFromList(whitelist, "whitelist", url, false);
+function addToList(list, listName, url, isSession) {
+	url = url.toLowerCase();
 	
-	if (!islisted(tempAllowList, url))
-		addToList(tempAllowList, "tempAllowList", url, true);
+	var returnedVal = findUrlPatternIndex(list, url);
+	if (returnedVal >= -1)
+		return;
+	returnedVal = Math.abs(returnedVal + 2);
+	list.splice(returnedVal, 0, url);
 }
 
+function removeFromList(list, listName, url, isSession) {
+	url = url.toLowerCase();
+	
+	var removedOneOrMore = false;
+	while(true)
+	{
+		var returnedVal = findUrlPatternIndex(list, url);
+		if (returnedVal < 0)
+			break;
+		list.splice(returnedVal, 1);
+		removedOneOrMore = true;
+		
+		for (var i = returnedVal; i < list.length; i++)
+		{
+			if (patternMatches(url, list[i]))
+			{
+				list.splice(i, 1);
+				i--;
+			}
+			else
+			{
+				break;
+			}
+		}
 
+		for (var i = returnedVal - 1; i >= 0; i--)
+		{
+			if (patternMatches(url, list[i]))
+			{
+				list.splice(i, 1);
+			}
+			else
+			{
+				break;
+			}
+		}		
+	}
+}
+
+/*
+In place removal and trimming of the links array.
+*/
 function removeEmptyInArray(links)
 {
 	if (links)
@@ -182,68 +393,82 @@ function removeEmptyInArray(links)
 			}			
 		}
 	}
-	return links;
 }
 
 /*
-Repairs conflicting rules or duplicates
+In place removal of duplicates. The "links" must already be sorted.
 */
-function cleanUpWhitelist()
+function removeDuplicatesInArray(links)
 {
-	/*for (var i = 0; i < whitelist.length; i++)
+	if (links)
 	{
-
-	}
-	saveWhitelist(whitelist);*/
-}
-
-function saveWhitelist(newWhitelist)
-{
-	/*
-	Need to change this to sorted list by reverse of the strings
-	Example: Say we have
-		zzz.aaa.com
-		    aaa.com
-			bbb.com
-			
-	Then we want it to sort to:
-			aaa.com
-		zzz.aaa.com	
-			bbb.com
-	*/
-	config.set("whitelist", removeEmptyInArray(newWhitelist.values));
-	whitelist = config.get('whitelist');	// This line required by Options.html to update correctly
-}
-
-function addToList(list, listName, url, isSession) {
-	//Need to change this to sorted list by reverse of the strings
-	list.push(url.toLowerCase());
-	
-	if (isSession)
-		sessionConfig.set(listName, list);	
-	else
-		config.set(listName, list);	
-}
-
-function removeFromList(list, listName, url, isSession) {
-	var isOnList = false;
-	for (var i = 0; i < list.length; i++)
-	{
-		isOnList = patternMatches(url, list[i]);
-		//isOnList = patternMatches(url, list[i]) || patternMatches(list[i], url);
-		if (isOnList)
+		for (var i = 0; i < links.length - 1; i++)
 		{
-			list.splice(i, 1);
-			i--;
+			if (patternMatches(links[i], links[i+1]))
+			{
+				links.splice(i+1, 1);	// links[i+1] will always be longer than links[i] because the list is sorted		
+			}			
 		}
 	}
-	
-	// This is inefficient, we are saving the entire list each time
-	if (isSession)
-		sessionConfig.set(listName, list);	
-	else
-		config.set(listName, list);	
 }
+
+/*
+Used by Options.html whitelist tab to save. Assume that the user enters malformed data.
+-Remove empty links/trims them
+-Remove duplicates
+*/
+function saveWhitelist(newWhitelist)
+{
+	removeEmptyInArray(newWhitelist);	// in place removal
+	if (!sortUrlList(newWhitelist))	// in place sort
+	{
+		return false;
+	}
+	else
+	{
+		removeDuplicatesInArray(newWhitelist);	// in place removal
+		whitelist = newWhitelist;	// This line required by Options.html to update correctly
+		config.set('whitelist', whitelist);
+		config.set("whitelistHash", Crypto.MD5(whitelist.toString()));
+		return true;
+	}
+}
+
+function saveBlacklist(newBlacklist)
+{
+	removeEmptyInArray(newBlacklist);	// in place removal
+	if (!sortUrlList(newBlacklist))	// in place sort
+	{
+		return false;
+	}
+	else
+	{
+		removeDuplicatesInArray(newBlacklist);	// in place removal
+		blacklist = newBlacklist;	// This line required by Options.html to update correctly
+		config.set('blacklist', blacklist);
+		config.set("blacklistHash", Crypto.MD5(blacklist.toString()));
+		return true;
+	}
+}
+
+function saveTempAllowList(newTempAllowList)
+{
+	removeEmptyInArray(newTempAllowList);	// in place removal
+	if (!sortUrlList(newTempAllowList))	// in place sort
+	{
+		return false;
+	}
+	else
+	{
+		removeDuplicatesInArray(newTempAllowList);	// in place removal
+		tempAllowList = newTempAllowList;	// This line required by Options.html to update correctly
+		sessionConfig.set('tempAllowList', tempAllowList);
+		sessionConfig.set("tempAllowListHash", Crypto.MD5(tempAllowList.toString()));
+		return true;
+	}
+}
+
+
 
 
 

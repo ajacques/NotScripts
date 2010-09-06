@@ -77,7 +77,12 @@ if (SAFARI) {
             if (messageEvent.message.callbackToken != callbackToken)
               return;
 
-            callback(messageEvent.message.data);
+			// Workaround to try to fix a crashing bug in Safari for Mac where there is no callback
+			if ((typeof callback === 'undefined') || !callback)
+			{}
+			else
+				callback(messageEvent.message.data);
+				
             // Change to calling in 0-ms setTimeout, as Safari team thinks
             // this will work around their crashing until they can release
             // a fix.

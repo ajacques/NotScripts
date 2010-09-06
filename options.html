@@ -4,7 +4,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 		  <meta name="author" content="Eric Wong, http://www.optimalcycling.com" />
 		  <meta name="keywords" content="XHTML, CSS, template, FullAhead" />
-		  <meta name="description" content="Because you really don't like pop ups" />
+		  <meta name="description" content="Take control of scripting in your browser." />
 		  <meta name="robots" content="index, follow, noarchive" />
 		  <meta name="googlebot" content="noarchive" />		
 		  
@@ -40,63 +40,28 @@
 		<script src="options.js"></script>		
 		<script type="text/javascript">
 			$(function(){
-
-				// Accordion
-				$("#accordion").accordion({ header: "h3" });
 	
 				// Tabs
 				$('#tabs').tabs();
-	
-
-				// Dialog			
-				$('#dialog').dialog({
-					autoOpen: false,
-					width: 600,
-					buttons: {
-						"Ok": function() { 
-							$(this).dialog("close"); 
-						}, 
-						"Cancel": function() { 
-							$(this).dialog("close"); 
-						} 
-					}
-				});
 				
-				// Dialog Link
-				$('#dialog_link').click(function(){
-					$('#dialog').dialog('open');
-					return false;
-				});
-
-				// Datepicker
-				$('#datepicker').datepicker({
-					inline: true
-				});
-				
-				// Slider
-				$('#slider').slider({
-					range: true,
-					values: [17, 67]
-				});
-				
-				// Progressbar
-				$("#progressbar").progressbar({
-					value: 20 
-				});
-				
+				/*
 				//hover states on the static widgets
 				$('#dialog_link, ul#icons li').hover(
 					function() { $(this).addClass('ui-state-hover'); }, 
 					function() { $(this).removeClass('ui-state-hover'); }
-				);
+				);*/
 				
 				// Button
-				$("#button_WhitelistSave").button();
+				$("button[name=button_ListSave]").button();
+				//$("#button_ListSave").button();
 				$("#button_ChoicesSave").button();
 				$("#extFatalError").button();
+				$("#reloadExt").button();
 				
 				$("#radioset_ShowActionButton").buttonset();	
-				$("#radioset_ReloadTabs").buttonset();	
+				$("#radioset_ReloadTabs").buttonset();
+				$("#radioset_HideHarmfulSearches").buttonset();
+				
 				
 			});
 		</script>
@@ -124,25 +89,30 @@
 		</div> 
 	<div id="tabs" style="height: auto;">
 		<ul>
-			<li><a href="#tabs-4">Password Status</a></li>
-			<li><a href="#tabs-0">Limitations</a></li>
-			<li><a href="#tabs-5">Change Log</a></li>
-			<li><a href="#tabs-3">About / Contact</a></li>
-			<li><a href="#tabs-1">Whitelist</a></li>
-			<li><a href="#tabs-2">Choices</a></li>			
+			<li><a href="#tabs-PasswordStatus">Password Status</a></li>
+			<li><a href="#tabs-Limitations">Limitations</a></li>
+			<li><a href="#tabs-ChangeLog">Change Log</a></li>
+			<li><a href="#tabs-About">About / Contact</a></li>
+			<li><a href="#tabs-Lists">Whitelist/Blacklist</a></li>
+			<li><a href="#tabs-Choices">Choices</a></li>		
+			<li><a href="#tabs-BugReport">Bug Report</a></li>	
 		</ul>
 		
 		<button onclick="chrome.extension.getBackgroundPage().clearSettings(); chrome.extension.getBackgroundPage().showOptionsPage();" id="extFatalError" name="actionButton" class="actionButton">
 		<span style="font-size:36px; color:red;">( ! )</span><br/><br/>NotScripts encountered corrupted settings data in Google Chrome / Exceeded extension storage quota in Google Chrome.<br/><br/>Click here to clear<br/>the NotScripts settings lists<br/>to try to solve the problem.<br/><br/>Otherwise, please ensure Google Chrome has javascript and HTML5 storage enabled.<br/><br/>Contact the author of NotScripts if you repeatedly get this message.
-		</button>		
+		</button>	
+
+			<button onclick="chrome.extension.getBackgroundPage().reloadExt(); window.close();" id="reloadExt" name="actionButton" class="actionButton">
+			<span style="font-size:36px; color:red;">( ! )</span><br/><br/>Click to reload NotScripts after you copy back your password file.
+			</button>			
 	
-		<div id="tabs-4">
+		<div id="tabs-PasswordStatus">
 			<div id="passwordGood" class="ui-widget"> 
 				<div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
 					<p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span> 
 					<strong>Password is set:</strong> NotScripts is working. Enjoy your browsing.</p> 
 				</div> 
-			</div> 	
+			</div> 				
 
 			<div id="extUpdated" class="ui-widget"> 
 				<div class="ui-state-error ui-corner-all" style="padding: 0 .7em;"> 
@@ -175,18 +145,16 @@
 			<h4 style="margin-left: 40px;">Step 1:&nbsp;Navigate
 			to the NotScripts Folder</h4>
 			<div style="margin-left: 80px;">Open the NotScripts Google
-			Chrome extension folder. The location of this folder is shown below:<br>
+			Chrome extension folder. The location of this folder is shown below. You can go there by directly copying and pasting the appropriate address below into the location bar of a folder:<br>
 			<ul>
 			  <li><span style="font-style: italic;">Windows XP:</span>
-			&nbsp; C:\Documents and Settings\<span
-			 style="font-weight: bold; font-style: italic;">YOUR_USER_NAME</span>\Local
+			&nbsp; %userprofile%\Local
 			Settings\Application Data\Google\Chrome\User Data\Default\Extensions\<span
 			 name="extensionId"></span></li>
 			</ul>
 			<ul>
 			  <li><span style="font-style: italic;">Windows
-			Vista or 7:</span> &nbsp; C:\Users\<span
-			 style="font-weight: bold; font-style: italic;">YOUR_USER_NAME</span>\AppData\Local\Google\Chrome\User
+			Vista or 7:</span> &nbsp; %userprofile%\AppData\Local\Google\Chrome\User
 			Data\Default\Extensions\<span name="extensionId"></span></li>
 			</ul>
 			<ul>
@@ -283,7 +251,7 @@
 			</div>			
 		</div>		
 		
-		<div id="tabs-0">
+		<div id="tabs-Limitations">
 			NotScripts for Google Chrome helps you be safer and more secure on the
 			web by limiting what third party javascript, iframes, and plugins can
 			run when used in conjunction with Google Chrome's built in tools.
@@ -306,7 +274,7 @@
 Please note that NotScripts is not a guarantee of security and users should always practice secure web surfing habits. Currently NotScripts does not provide advanced protection for things such as clickjacking and other methods found in the "<a href="http://noscript.net/">NoScript</a>" addon for Firefox and a malicious website may still be able to successfully use such techniques.	
 			<br>
 			<br>
-			However, there are 3 main issues with NotScripts at the moment in
+			There are 3 main issues with NotScripts at the moment in
 			order of importance:<br>
 			<ol>
 			  <li>NotScripts can block plugins like Flash and Silverlight.
@@ -340,7 +308,8 @@ Please note that NotScripts is not a guarantee of security and users should alwa
 			useful and are often required for a site to function properly. If you
 			want to, you can set Google Chrome to deny javascript for all sites and
 			use NotScripts to selectively pick the scripts to run on sites you
-			enable javascript on.&nbsp;</li>
+			enable javascript on.&nbsp; <br><br>
+			<b>UPDATE:</b> As of NotScripts V0.9.2 there is some inline script mitigation as a stop gap measure to help a little until the extensions API is more robust.</li>
 			  <br>
 			  <li>When you visit a web site for the first time with scripting
 			enabled, you may see NotScripts quickly reload it once as it caches the
@@ -353,7 +322,81 @@ Please note that NotScripts is not a guarantee of security and users should alwa
 
 		</div>
 		
-		<div id="tabs-5">
+		<div id="tabs-ChangeLog">
+			<h3><span style="font-weight: bold;">NotScripts
+			0.9.6 September 6th, 2010</span><br
+			 style="font-weight: normal;">
+			</h3>
+			<ul>
+			  <li><span style="font-weight: normal;">New:
+			NotScripts can now also block scripts in ftp:// and file:///
+			(localhost) sites if given permission in the Google Chrome extensions page.</span></li>
+			  <li><span style="font-weight: normal;">New: Added
+			support for blocking old-school frameset/frame elements.</span></li>
+			  <li><span style="font-weight: normal;">New: In the
+			drop down menu, NotScripts now shows a link to each domain's Google
+			Safe Browsing page to help you decide to whitelist it or not. Note that
+			NotScripts only links to the English version of the Google Safe
+			Browsing page at this point. This should change when NotScripts adds
+			additional languages.</span></li>
+			  <li><span style="font-weight: normal;">New:
+			NotScripts now removes the "This site may harm your computer" links
+			from Google Search results. Note: Is not compatible with AutoPagerize
+			type extensions.</span></li>
+			  <li><span style="font-weight: normal;">New: Added
+			memory stats for the lists in the Options page to help users gauge how
+			much of the HTML5 local storage quota they are using.</span></li>
+			  <li><span style="font-weight: normal;">New:
+			NotScripts now supports blocking modes of blacklist and whitelist with
+			top level sites allowed by default.</span></li>
+			  <li><span style="font-weight: normal;">New: A page
+			in the Options page on how to report bugs.</span></li>
+			  <li><span style="font-weight: normal;">Improved:
+			The temp allow this site features now need much fewer reloads when used
+			because of a change in the way temp permissions are stored.<br>
+				</span></li>
+			  <li><span style="font-weight: normal;">Improved:
+			(From Mike) Windows users can now simply copy and paste the folder path
+			shown on the password status page to get to their password file without
+			having to type in their user name.</span></li>
+			  <li><span style="font-weight: normal;">Improved:
+			Lowered the memory usage and improved the start up time of the
+			NotScripts drop down menu by removing unused components from the jquery
+			UI theme library.</span></li>
+			  <li><span style="font-weight: normal;">Improved:
+			Greatly reduced the computing power required for blocking by
+			implementing sorted lists that can be searched with a binary search
+			like algorithm.</span></li>
+			  <li><span style="font-weight: normal;">Improved:
+			Site specific storage for the whitelist is now only overwritten when
+			there is a change made instead of on every page load, thanks to the
+			usage of MD5 hashes.</span></li>
+			  <li><span style="font-weight: normal;">Changed:
+			IPv4 addresses must now be an exact match when comparing a url with one
+			in the whitelist.</span></li>
+			  <li><span style="font-weight: normal;">Changed:
+			The user is now given the option to reset the HTML5 storage of a
+			website when the storage quota is exceeded or the encryption is
+			incorrect, instead of simply trying to reload the web page.</span></li>
+			  <li><span style="font-weight: normal;">Bug Fix:
+			"Allow All Shown" button incorrectly adds a domain to the whitelist
+			even when the domain already exists in the whitelist, leading to
+			duplicate entries.</span></li>
+			  <li><span style="font-weight: normal;">Bug Fix: A
+			fix has been implemented for the "Are you sure you want to leave this
+			page?" pop ups some users have reported seeing when inline script
+			mitigation is on.&nbsp;There is also improved blocking of this pop
+			up implemented.</span></li>
+			  <li><span style="font-weight: normal;">Bug Fix: A
+			few users have reported that they are not able to get the "Allow"
+			button to respond. I have not been able to confirm whether this is an
+			actual bug&nbsp;but the NotScripts "Allow" button now calls the
+			background page to carry out the actions so this may resolve it.</span></li>
+			  <li><span style="font-weight: normal;">Removed:
+			Made a few code changes so that NotScripts no longer requires
+			cross-origin permissions to run in Google Chrome for improved security.</span></li>
+			</ul>
+		
 			<h3>NotScripts 0.9.5 August 24th, 2010</h3>
 			<ul>
 			  <li>Bug Fix: (Reported by Eric) Corrected path for icons some Linux systems were having trouble with.</li>
@@ -465,27 +508,94 @@ Please note that NotScripts is not a guarantee of security and users should alwa
 
 		</div>			
 		
-		<div id="tabs-1">
-			<p>Whitelisted sites are allowed to load scripts/iframes/plugins from source locations when they are referenced on a web page. You can change the whitelist here or through the extension's page action button. Some top web sites are preloaded.</p>
-				For example, to whitelist http://www.google.com, you enter<br/>
-				<br/><b>&nbsp;&nbsp;google.com </b><br/> <p>which also whitelists google.com, maps.google.com, books.google.com, etc...</p>		
-			<!--
-			<div style="position: relative; width: 300px; height: 150px; padding:10px 30px 10px 30px; overflow:hidden;" class="fakewindowcontain"> 
-				<div class="ui-overlay"><div class="ui-widget-shadow ui-corner-all" style="width: 302px; height: 132px; position: absolute; left: 10px; top: 10px;"></div></div> 
-				<div style="position: absolute; width: 280px; height: 110px;left: 10px; top: 10px; padding: 10px;" class="ui-widget ui-widget-content ui-corner-all"> 
-						<p>Instructions for using the whitelist.</p> 
-				</div> 
-			</div> 	
-			-->
+		<div id="tabs-Lists">
+			<h2><span name="blockingMode"></span></h2>
+			<h3>Instructions</h3>
+			<p>Whitelisted sites are allowed to load scripts/iframes/plugins from source locations when they are referenced on a web page. 
+			The blacklist is ONLY used if you enabled the NotScripts blacklist mode or set NotScripts to allow top level sites by default.
+			Note that if you set NotScripts to blacklist mode, the whitelist is not used at all but it will still be shown below to let you clear old entries.
+			It is recommended, but is not required, that you clear the entries in the whitelist if you switch to blacklist mode full time and vice versa.</p>
+			<p>
+			The tempAllowList is used to hold the list of sites you've given temporary permission to. Due to a bug/quirk of Google Chrome's
+			implementation of sessionStorage, the tempAllowList does NOT update live on this page like the other lists.
+			</p>
+			<br/>
+			<p>
+			To change the blocking mode to blacklist, place the following line into your <i><b>CHANGE__PASSWORD__HERE.js</b></i> file:<br/><br/>
+			<b>&nbsp;&nbsp;&nbsp;const BLOCKING_MODE = "BLACKLIST";</b>
+			<br/><br/>
+			To change the blocking mode to whitelist with top level sites allowed, place the following line into your <i><b>CHANGE__PASSWORD__HERE.js</b></i> file:<br/><br/>
+			<b>&nbsp;&nbsp;&nbsp;const BLOCKING_MODE = "WHITELIST_ALLOW_TOP_LEVEL";</b>
+			</p>
+			<br/>
+			<p>
+				You can change what is in the lists here or through the extension's page action button. Some top web sites are preloaded. 
+				For example, to whitelist http://www.google.com, you enter</p>
+				<b>&nbsp;&nbsp;&nbsp;google.com </b><br/> <p>which also whitelists google.com, maps.google.com, books.google.com, etc...</p>	
+			<br/>
+			<h3>List Stats</h3>
+			<p>Total # Entries: <span name="numListEntries"></span></p>
+			<p>Space Occupied (dual-byte encoding): <span name="listSpace"></span> bytes  
+				/ <span name="maxStorageSize"></span> bytes (<span name="listSpacePct"></span> %)</p>
+			<p>Est. Space Occupied Encrypted (dual-byte encoding): <span name="listSizeEncrypted"></span> bytes  
+				/ <span name="maxStorageSize"></span> bytes (<span name="listSizeEncryptedPct"></span> %)</p>
+			<p>Est. Max. Entries: <span name="estMaxListEntries"></span></p>					
+			<br/><br/>
+			<button name="button_ListSave" onclick="save(); saveButtonAnimate(this.id);">Save Changes</button>	
+			<br/>			
 			<div style="padding: 0px 0px 0px 40px">
-				<textarea name="whitelist" id="whitelist" cols="50" rows="20" style="padding: 10px 10px 10px 10px"></textarea>	
+				<h3>Whitelist</h3>
+				<div style="padding: 0px 0px 0px 40px">
+				<textarea name="whitelist" id="whitelist" cols="50" rows="20" style="padding: 10px 10px 10px 10px"></textarea>
+				</div>
 			</div>
 			
+			
+			<div style="padding: 0px 0px 0px 40px">
+				<h3>Blacklist</h3>
+				<div style="padding: 0px 0px 0px 40px">
+				<textarea name="blacklist" id="blacklist" cols="50" rows="20" style="padding: 10px 10px 10px 10px"></textarea>	
+				</div>
+			</div>	
+
+			
+			<div style="padding: 0px 0px 0px 40px">
+				<h3>TempAllowList (Does not update live on this page)</h3>
+				<div style="padding: 0px 0px 0px 40px">
+				<textarea name="tempAllowList" id="tempAllowList" cols="50" rows="20" style="padding: 10px 10px 10px 10px"></textarea>
+				</div>				
+			</div>				
+			
 			<br/>
-			<button id="button_WhitelistSave" onclick="save(); saveButtonAnimate(this.id);">Save Changes</button>				
+			<button name="button_ListSave" onclick="save(); saveButtonAnimate(this.id);">Save Changes</button>	
+			<br/><br/>
+		
 		</div>
 		
-		<div id="tabs-2">
+		<div id="tabs-BugReport">
+			<h3>Instructions</h3>
+			<p>To report a bug, please copy and paste the following information to a bug report at:
+				<div style="padding: 0px 0px 0px 50px">
+					<h3><a href="http://code.google.com/p/notscripts/issues/list">http://code.google.com/p/notscripts/issues/list</a></h3>
+				</div>			
+			Remember to include steps to reproduce the bug or a link to a site where the bug occurred.
+			</p>
+			
+			<h3><span name="blockingMode"></span></h3>
+			<h3>List Stats</h3>
+			<p>Total # Entries: <span name="numListEntries"></span></p>
+			<p>Space Occupied (dual-byte encoding): <span name="listSpace"></span> bytes  
+				/ <span name="maxStorageSize"></span> bytes (<span name="listSpacePct"></span> %)</p>
+			<p>Est. Space Occupied Encrypted (dual-byte encoding): <span name="listSizeEncrypted"></span> bytes  
+				/ <span name="maxStorageSize"></span> bytes (<span name="listSizeEncryptedPct"></span> %)</p>
+			<p>Est. Max. Entries: <span name="estMaxListEntries"></span></p>					
+			
+			<h3>User Agent</h3>
+			<span name="userAgent"></span>
+		
+		</div>		
+		
+		<div id="tabs-Choices">
 			<br>
 			<form style="margin-top: 1em; display: inline"> 
 				<div id="radioset_ShowActionButton" style="padding-left: 50px;"> 
@@ -498,14 +608,20 @@ Please note that NotScripts is not a guarantee of security and users should alwa
 					<input type="radio" id="radio_ON_ReloadTabs" name="radio_ReloadTabs" /><label for="radio_ON_ReloadTabs">ON</label> 
 					<input type="radio" id="radio_OFF_ReloadTabs" name="radio_ReloadTabs" /><label for="radio_OFF_ReloadTabs">OFF</label>
 					<label>&nbsp; &nbsp;Reload tabs when permissions change</label>
-				</div> 								
+				</div> 
+				<br>
+				<div id="radioset_HideHarmfulSearches" style="padding-left: 50px;"> 
+					<input type="radio" id="radio_ON_HideHarmfulSearches" name="radio_HideHarmfulSearches" /><label for="radio_ON_HideHarmfulSearches">ON</label> 
+					<input type="radio" id="radio_OFF_HideHarmfulSearches" name="radio_HideHarmfulSearches" /><label for="radio_OFF_HideHarmfulSearches">OFF</label>
+					<label>&nbsp; &nbsp;Hide Google Search results Google labels harmful</label>
+				</div> 				
 			</form> 
 			<br>
 			<br>
 			<button id="button_ChoicesSave" onclick="save(); saveButtonAnimate(this.id);">Save Changes</button>			
 		</div>
 		
-		<div id="tabs-3">
+		<div id="tabs-About">
 		NotScripts is created by Eric Wong. It gives you greater control over
 		what javascript, iframes, and plugins runs in your browser to increase security and lower the
 		CPU usage. It is useful to help mitigate attacks like cross-site
@@ -812,6 +928,41 @@ Please note that NotScripts is not a guarantee of security and users should alwa
 
 		  <br>
 		  <br>
+		  
+  <li><big><span
+ style="font-weight: bold;">Crypto-JS</span></big>
+(<a href="http://code.google.com/p/crypto-js/"
+ style="font-weight: bold;">http://code.google.com/p/crypto-js/</a>,
+For MD5 hashing)<br>
+    <br>
+    <div style="margin-left: 40px;">Copyright (c) 2009,
+Jeff Mott. All rights reserved.<br>
+    <br>
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:<br>
+    <br>
+Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.<br>
+Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.<br>
+Neither the name Crypto-JS nor the names of its contributors may be
+used to endorse or promote products derived from this software without
+specific prior written permission.<br>
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</div>
+  </li>
+		  
 		</ul>
 			
 		</div>	

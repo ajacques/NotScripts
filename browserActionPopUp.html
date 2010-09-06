@@ -29,6 +29,17 @@
 			overflow: auto;
 		}
 		
+		a.infoUrl{
+			font-family: 'Arial', arial, serif;
+			font-size:16px;
+			font-style:italic;
+			text-align:center;
+			padding:0px 0px 0px 6px;
+			width:auto;
+			height:auto;
+			overflow: auto;
+		}		
+		
 		div.urlActionForm{
 			text-align: center;
 
@@ -39,7 +50,7 @@
 			
 			width:340px;
 			padding:0px 0px 0px 0px;
-			margin:0px auto;
+			margin:0px 0px 0px 0px;
 			border:1px solid #DDD;
 			
 			white-space: wrap;
@@ -58,12 +69,12 @@
 		}
 		
 		div.urlActionForm:hover {
-			color:#fff;
+			color:#000;
 			border-color:#3278BE;
 		}		
 
 		div.aRadioSetDiv {
-			padding:0px 0px 5px 0px;
+			padding:0px 0px 5px 4px;
 		}
 
 		#bottomLinks {
@@ -74,7 +85,7 @@
 			text-align:center;
 			width:auto;
 			margin:0px auto;
-			padding:5px 5px 5px 5px;			
+			padding:5px 5px 5px 5px;	
 		}
 
 		#divMultiSelect {
@@ -141,10 +152,10 @@
 </button> 
 	
 <button onclick="" id="fatalError" name="actionButton" class="actionButton">
-		<span style="font-size:36px; color:red;">( ! )</span><br/><br/>NotScripts encountered invalid encryption for this site's settings / Exceeded storage quota on<br/><br/><span id="fatalErrorUrl" style="font-style:italic;"></span><br/>Click here to reload<br/> the current web page<br/>to try again.<br/><br/>Otherwise, please clear/enable the browser HTML5 storage.
+		<span style="font-size:36px; color:red;">( ! )</span><br/><br/>NotScripts encountered invalid encryption for this site's settings / Exceeded storage quota on<br/><br/><span id="fatalErrorUrl" style="font-style:italic;"></span><br/>Click here to reset the<br/>HTML5 storage<br/>of the current web page.<br/><br/>Otherwise, please clear/enable the browser HTML5 storage.
 </button>
 
-<button onclick="chrome.extension.getBackgroundPage().clearSettings(); updateCurrentOnUnload=false; chrome.tabs.executeScript(null, {code:'window.location.reload();'});  window.close();" id="extFatalError" name="actionButton" class="actionButton">
+<button onclick="chrome.extension.getBackgroundPage().clearSettings(); updateCurrentOnUnload=false; reloadCurrentAndClose();" id="extFatalError" name="actionButton" class="actionButton">
 		<span style="font-size:36px; color:red;">( ! )</span><br/><br/>NotScripts encountered corrupted settings data in Google Chrome / Exceeded extension storage quota in Google Chrome.<br/><br/>Click here to clear<br/>the NotScripts settings lists<br/>to try to solve the problem.<br/><br/>Otherwise, please ensure Google Chrome has javascript and HTML5 storage enabled.<br/><br/>Contact the author of NotScripts if you repeatedly get this message.
 </button>
  
@@ -172,6 +183,11 @@
 <script type = "text/javascript">
 
 var currTabId = null;
+var currTabIndex = null;
+var currTabUrl = null;
+
+var numActionShown = 0;
+const MAX_NUM_ACTION = 150;
 
 var fatalErrorButton = document.getElementById("fatalError");
 var extFatalErrorButton = document.getElementById("extFatalError");
@@ -223,6 +239,14 @@ if (passwordStatus !== PASSWORD_STATUS.okay)
 }
 else if (bgPage.extFatalError)
 {
+	chrome.tabs.getSelected(null, 
+		function(tab)
+		{	
+			currTabId = tab.id;
+			currTabIndex = tab.index;
+			currTabUrl = tab.url;			
+		}
+	);
 	extFatalErrorButton.style.display = "block";
 	spacerTopDiv.style.display = "block";
 }
@@ -244,7 +268,9 @@ else
 	chrome.tabs.getSelected(null, 
 		function(tab)
 		{	
-			currTabId = tab.id;						
+			currTabId = tab.id;
+			currTabIndex = tab.index;
+			currTabUrl = tab.url;
 			chrome.tabs.sendRequest(tab.id, {type: "get sources"}, showLastBlocked);
 				
 		}
@@ -256,7 +282,7 @@ else
 function chunkUrlForDisplay(currBlockedURL)
 {
 	const maxLines = 5;
-	var urlChunks = currBlockedURL.chunk(25);
+	var urlChunks = currBlockedURL.chunk(30);
 	var theMessage = "";
 	
 	if (urlChunks)
@@ -279,7 +305,8 @@ function chunkUrlForDisplay(currBlockedURL)
 const URL_LIST_TYPE = {
 	"allowed": 0,
 	"tempAllowed": 1,
-	"blocked": 2
+	"blocked": 2,
+	"untrusted": 3
 }
 
 function limitUrlLength(currBlockedURL)
@@ -287,6 +314,10 @@ function limitUrlLength(currBlockedURL)
 	return (currBlockedURL.length >= 300 ? currBlockedURL.substring(0, 299) + "......<<CUT OFF, TOO LONG>>" : currBlockedURL);
 }
 
+/*
+In case we have duplicates from iframes or unknown TLD's. Uses linear search to go through the already shown elements.
+Probably best to not try a binary-like search on the shown elements because of the small numbers (~less than 10).
+*/
 function fixAlreadyShown(currBlockedURL)
 {
 	var isAlreadyShown = false;
@@ -300,12 +331,24 @@ function fixAlreadyShown(currBlockedURL)
 			//console.log("matches    " + currBlockedURL  + "    " + currDataUrl);
 			if (currBlockedURL.length < currDataUrl.length)
 			{
-				var currUrlTitleEl = docEls[i].childNodes[0];
-				var currRBs = docEls[i].childNodes[1].childNodes;	// Goes in multiples of 2			
+				var currUrlTitleEl = docEls[i].childNodes[0];	//.childNodes[0];
+				var currRBs = docEls[i].childNodes[1].childNodes;	// Goes in multiples of 2
+				
 				currUrlTitleEl.innerText = limitUrlLength(currBlockedURL);
-				currRBs[0].setAttribute("data-url", currBlockedURL);								
-				currRBs[2].setAttribute("data-url", currBlockedURL);
-				currRBs[4].setAttribute("data-url", currBlockedURL);
+				var infoUrl = document.createElement("a");
+				infoUrl.className = "infoUrl";
+				infoUrl.href = "#";
+				infoUrl.innerText = "(?)";
+				infoUrl.setAttribute("data-url", currBlockedURL);
+				infoUrl.onclick = openInfoUrl;				
+				currUrlTitleEl.appendChild(infoUrl);				
+				
+				currRBs[0].setAttribute("data-url", currBlockedURL);	// Allow						
+				currRBs[2].setAttribute("data-url", currBlockedURL);	// Block This Site
+				currRBs[4].setAttribute("data-url", currBlockedURL);	// Temp
+				
+				if (currRBs[6])
+					currRBs[6].setAttribute("data-url", currBlockedURL);	// In case we have an extra button
 			}
 
 			isAlreadyShown = true;								
@@ -314,7 +357,7 @@ function fixAlreadyShown(currBlockedURL)
 	return isAlreadyShown;	
 }
 
-function addButtonsFromUrlList(urlList, urlListType)
+function addButtonsFromUrlList(urlList, urlListType, topDomain, topDomainIsWhitelisted)
 {
 	if (urlList)
 	{
@@ -322,7 +365,7 @@ function addButtonsFromUrlList(urlList, urlListType)
 		{
 			// Note: It is expected and important that the urlList is already encoded with encodeURI,
 			// which it should be if urlList was filled using only returned values from getPrimaryDomain(...)
-			// Otherwise, we will have unexpected formatting when rendering the text if should tries forming malicious strings.
+			// Otherwise, we will have unexpected formatting when rendering the text if there are malformed strings.
 			var currBlockedURL = urlList[i];
 			
 			if (currBlockedURL)
@@ -330,16 +373,41 @@ function addButtonsFromUrlList(urlList, urlListType)
 				if (fixAlreadyShown(currBlockedURL))
 					continue;				
 				
+				if (numActionShown > MAX_NUM_ACTION)
+				{
+					var overFlowMsg = document.createElement("div");
+					overFlowMsg.className = "urlActionForm";
+					overFlowMsg.setAttribute("name", "urlActionForm");
+					overFlowMsg.style.padding = "5px 0px 5px 0px";
+					overFlowMsg.innerText = "Overflow.....too many scripts. At least " + (urlList.length - i) + " more.\nMalicious site?";
+					spacerBottomDiv.parentNode.insertBefore(overFlowMsg,spacerBottomDiv);
+					overFlowMsg.style.display = "block";					
+					break;
+				}
+				
+				numActionShown++;
+				
 				var aForm = document.createElement("div");
 				aForm.className = "urlActionForm";
 				aForm.setAttribute("name", "urlActionForm");
 				var aRadioSetDiv = document.createElement("div");
 				aRadioSetDiv.className = "aRadioSetDiv";				
 		
+		
 				var divUrl = document.createElement("div");
 				divUrl.className = "urlTitle";
 				divUrl.innerText = limitUrlLength(currBlockedURL);
-				aForm.appendChild(divUrl);				
+				
+				var infoUrl = document.createElement("a");
+				infoUrl.className = "infoUrl";
+				infoUrl.href = "#";
+				infoUrl.innerText = "(?)";
+				infoUrl.setAttribute("data-url", currBlockedURL);
+				infoUrl.onclick = openInfoUrl;				
+				divUrl.appendChild(infoUrl);				
+
+				aForm.appendChild(divUrl);
+				
 				
 				var rbGroupName = randomID();
 				
@@ -362,12 +430,32 @@ function addButtonsFromUrlList(urlList, urlListType)
 				rbBlock.name = rbGroupName;
 				rbBlock.setAttribute("data-url", currBlockedURL);
 				rbBlock.onclick = removeSite;
-				if (urlListType === URL_LIST_TYPE.blocked) rbBlock.checked = true;				
+				if ((urlListType === URL_LIST_TYPE.blocked && blocking_mode !== BMODE_TYPES.WHITELIST_ALLOW_TOP_LEVEL)
+					|| (urlListType === URL_LIST_TYPE.untrusted && blocking_mode === BMODE_TYPES.WHITELIST_ALLOW_TOP_LEVEL)) 
+					rbBlock.checked = true;				
 				aRadioSetDiv.appendChild(rbBlock);
 				var labelBlock = document.createElement("label");
 				labelBlock.setAttribute("for", rbBlock.id);
-				labelBlock.innerText = "Block From Site";
-				aRadioSetDiv.appendChild(labelBlock);					
+				labelBlock.innerText = blocking_mode === BMODE_TYPES.WHITELIST_ALLOW_TOP_LEVEL ? "Block Site" : "Block From Site";
+				aRadioSetDiv.appendChild(labelBlock);	
+				
+				if (blocking_mode === BMODE_TYPES.WHITELIST_ALLOW_TOP_LEVEL)
+				{
+					var rbSameSite = document.createElement("input");
+					rbSameSite.type = "radio";
+					rbSameSite.id = randomID();
+					rbSameSite.name = rbGroupName;
+					rbSameSite.setAttribute("data-url", currBlockedURL);
+					rbSameSite.onclick = sameSite;
+					if (urlListType === URL_LIST_TYPE.blocked 
+						|| (urlListType === URL_LIST_TYPE.allowed && topDomain === currBlockedURL && !topDomainIsWhitelisted)) 
+						rbSameSite.checked = true;				
+					aRadioSetDiv.appendChild(rbSameSite);
+					var labelSameSite = document.createElement("label");
+					labelSameSite.setAttribute("for", rbSameSite.id);
+					labelSameSite.innerText = "Same";
+					aRadioSetDiv.appendChild(labelSameSite);				
+				}				
 				
 				var rbTempAllow = document.createElement("input");
 				rbTempAllow.type = "radio";
@@ -380,7 +468,7 @@ function addButtonsFromUrlList(urlList, urlListType)
 				var labelTempAllow = document.createElement("label");
 				labelTempAllow.setAttribute("for", rbTempAllow.id);
 				labelTempAllow.innerText = "Temp";
-				aRadioSetDiv.appendChild(labelTempAllow);			
+				aRadioSetDiv.appendChild(labelTempAllow);
 				
 				$(aRadioSetDiv).buttonset();
 				
@@ -400,7 +488,7 @@ function showLastBlocked(response)
 		
 		var currBlockedURL = encodeURI(response.url ? response.url : "");
 		document.getElementById("fatalErrorUrl").innerText = chunkUrlForDisplay(currBlockedURL);	
-		fatalErrorButton.onclick = reloadCurrentAndClose;
+		fatalErrorButton.onclick = clearSiteStorageAndClose;
 		fatalErrorButton.style.display = "block";
 		spacerTopDiv.style.display = "block";
 	}
@@ -444,9 +532,13 @@ function showLastBlocked(response)
 		globalAllowTempButton.style.display = "block";
 		globalAllowTempButton.onclick = toggleOnOff;
 
-		addButtonsFromUrlList(response.pageSourcesTempAllowed, URL_LIST_TYPE.tempAllowed);
-		addButtonsFromUrlList(response.pageSourcesAllowed, URL_LIST_TYPE.allowed);
-		addButtonsFromUrlList(response.pageSourcesForbidden, URL_LIST_TYPE.blocked);	
+		addButtonsFromUrlList(response.pageSourcesTempAllowed, URL_LIST_TYPE.tempAllowed, response.topDomain, response.topDomainIsWhitelisted);
+		addButtonsFromUrlList(response.pageSourcesAllowed, URL_LIST_TYPE.allowed, response.topDomain, response.topDomainIsWhitelisted);
+		
+		// Untrust needs to be before blocked in case of iframes
+		addButtonsFromUrlList(response.pageSourcesUntrusted, URL_LIST_TYPE.untrusted, response.topDomain, response.topDomainIsWhitelisted);	
+		addButtonsFromUrlList(response.pageSourcesForbidden, URL_LIST_TYPE.blocked, response.topDomain, response.topDomainIsWhitelisted);
+		
 	}
 
 	// Workaround for Google Chrome on netbooks with screen heights of less than 700px where the 
@@ -463,139 +555,136 @@ function doTasks()
 {
 	if (updateCurrentOnUnload)
 		bgPage.updateAllTabs(false);
-		//bgPage.updateTab(currTabId);
+}
+
+function openInfoUrl()
+{
+	var url = this.getAttribute("data-url");
+	chrome.tabs.create({"url": "http://www.google.com/safebrowsing/diagnostic?site=" + encodeURIComponent(url), "index": currTabIndex});
+	window.close();
 }
 
 function tempAllowSite()
 {
-	var url = this.getAttribute("data-url");
-	bgPage.tempListPermitUrl(url);
+	var urls = new Array();
+	urls.push(this.getAttribute("data-url"));
+	bgPage.tempPermitUrl(urls);
 	
 	if (multiSelectCB.checked)
 		updateCurrentOnUnload = true;
 	else
-		updateAllTabs(false);
-		//updateCurrentTab(false);
+	{
+		bgPage.updateAllTabs(false);
+		window.close();
+	}
 }
 
 function removeSite() {
-	var url = this.getAttribute("data-url");
-	bgPage.revokeUrl(url);
+	var urls = new Array();
+	urls.push(this.getAttribute("data-url"));
+	bgPage.revokeUrl(urls);
 	
 	if (multiSelectCB.checked)
 		updateCurrentOnUnload = true;
 	else
-		updateAllTabs(false);
-		//updateCurrentTab(false);	
+	{
+		bgPage.updateAllTabs(false);
+		window.close();
+	}
 }
 
 function addSite() {	
-	var url = this.getAttribute("data-url");
-	if (!bgPage.isWhitelisted(url))
-		bgPage.permitUrl(url);		
+	var urls = new Array();
+	urls.push(this.getAttribute("data-url"));
+	bgPage.permitUrl(urls);		
 
 	if (multiSelectCB.checked)
 		updateCurrentOnUnload = true;
 	else
-		updateAllTabs(false);
-		//updateCurrentTab(false);
+	{
+		bgPage.updateAllTabs(false);
+		window.close();
+	}
+}
+
+function sameSite() {
+	var urls = new Array();
+	urls.push(this.getAttribute("data-url"));
+	bgPage.sameSiteUrl(urls);
+	
+	if (multiSelectCB.checked)
+		updateCurrentOnUnload = true;
+	else
+	{
+		bgPage.updateAllTabs(false);
+		window.close();
+	}
 }
 
 function blockAllShown()
 {
+	var urls = new Array();
 	var docEls = document.getElementsByName("urlActionForm");
 	for (var i = 0; i < docEls.length; i++)
 	{
-		bgPage.revokeUrl(docEls[i].childNodes[1].childNodes[0].getAttribute("data-url"));
+		urls.push(docEls[i].childNodes[1].childNodes[0].getAttribute("data-url"));
 	}
+	bgPage.revokeUrl(urls);
 
 	updateCurrentOnUnload = false;
-	updateAllTabs(false);
+	bgPage.updateAllTabs(false);
+	window.close();
 }
 
 function allowAllShown()
 {
+	var urls = new Array();
 	var docEls = document.getElementsByName("urlActionForm");
 	for (var i = 0; i < docEls.length; i++)
 	{
-		bgPage.permitUrl(docEls[i].childNodes[1].childNodes[0].getAttribute("data-url"));
+		urls.push(docEls[i].childNodes[1].childNodes[0].getAttribute("data-url"));
 	}
+	bgPage.permitUrl(urls);
 
 	updateCurrentOnUnload = false;
-	updateAllTabs(false);
+	bgPage.updateAllTabs(false);
+	window.close();
 }
 
 function tempAllowShownBlocked()
 {
+	var urls = new Array();
 	var docEls = document.getElementsByName("urlActionForm");
 	for (var i = 0; i < docEls.length; i++)
 	{
 		// The second childNodes goes in multiples of 2 because jQuery renders an element over the radio boxes
-		if (!docEls[i].childNodes[1].childNodes[0].checked)
-			bgPage.tempListPermitUrl(docEls[i].childNodes[1].childNodes[0].getAttribute("data-url"));
+		if (!docEls[i].childNodes[1].childNodes[0].checked)		// Looks at the "Allow" button
+			urls.push(docEls[i].childNodes[1].childNodes[0].getAttribute("data-url"));
 	}
+	bgPage.tempPermitUrl(urls);
 	
 	updateCurrentOnUnload = false;
-	updateAllTabs(false);
+	bgPage.updateAllTabs(false);
+	window.close();
 }
 
 
 function toggleOnOff() {	
 	var newState = this.getAttribute("data-newState") === "true" ? true : false;
-	// We have to manually refresh the variables we use to cache the session storages vars
-	// because they don't fire the same way as local storage
-	bgPage.sessionConfig.set('globalAllowAll', newState);
-	bgPage.urlsGloballyAllowed = bgPage.sessionConfig.get("globalAllowAll");
-	bgPage.sessionConfig.set('tempAllowList', []);
-	bgPage.tempAllowList = bgPage.sessionConfig.get('tempAllowList');
-	
-	updateAllTabs(false);
+	bgPage.toggleOnOff(newState);	
+	bgPage.updateAllTabs(false);
+	window.close();
 }
 
-function updateCurrentTab(refreshLists)
+function clearSiteStorageAndClose()
 {
-	if (refreshLists)
-	{
-		bgPage.whitelist = bgPage.config.get("whitelist");
-		bgPage.tempAllowList = bgPage.config.get("tempAllowList");
-	}
-
-	chrome.tabs.sendRequest(currTabId, 
-		{"type": "update settings", 
-			"tempVals": {"globalAllowAll": bgPage.sessionConfig.get("globalAllowAll"), "tempAllowList": bgPage.tempAllowList},
-			"whitelist": bgPage.whitelist, "reload": bgPage.config.get("reloadCurrentTabOnToggle")
-		});	
-	window.close();		
-}
-
-function updateAllTabs(refreshLists) {
-	chrome.windows.getAll({populate: true}, function(windowsArray) {
-		if (refreshLists)
-		{
-			bgPage.whitelist = bgPage.config.get('whitelist');
-		}
-		
-		var shouldReload = bgPage.config.get('reloadCurrentTabOnToggle');
-		for (var i = 0; i < windowsArray.length; i++)
-		{
-			var currWindow = windowsArray[i];
-			for (var j = 0; j < currWindow.tabs.length; j++)
-			{
-				chrome.tabs.sendRequest(currWindow.tabs[j].id, 
-					{"type": "update settings", 
-						"tempVals": {"globalAllowAll": bgPage.urlsGloballyAllowed, "tempAllowList": bgPage.tempAllowList},
-						"whitelist": bgPage.whitelist, 
-						"reload": shouldReload
-					});							
-			}		
-		}
-		window.close();
-	});
+	bgPage.resetSiteStorage(currTabId);
+	window.close();
 }
 
 function reloadCurrentAndClose()
 {
-	chrome.tabs.executeScript(currTabId, {code:'window.location.reload();'}); 
+	chrome.tabs.update(currTabId, {"url": currTabUrl});
 	window.close();
 }
 </script>

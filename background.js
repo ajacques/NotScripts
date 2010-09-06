@@ -18,47 +18,46 @@ function showOptionsPage()
 	});	
 }
 
-function updateTab(currTabId)
-{
-	chrome.tabs.sendRequest(currTabId, 
-		{"type": "update settings", 
-			"tempVals": {"globalAllowAll": sessionConfig.get("globalAllowAll"), "tempAllowList": tempAllowList},
-			"whitelist": whitelist, "reload": config.get("reloadCurrentTabOnToggle")
-		});	
-}
-
 function updateAllTabs(refreshLists) {
 	chrome.windows.getAll({populate: true}, function(windowsArray) {
 		if (refreshLists)
 		{
 			whitelist = config.get('whitelist');
 		}
-		
-		var shouldReload = config.get('reloadCurrentTabOnToggle');
+
+		var newSettings = generateAllSettings();
 		for (var i = 0; i < windowsArray.length; i++)
 		{
 			var currWindow = windowsArray[i];
 			for (var j = 0; j < currWindow.tabs.length; j++)
 			{
-				chrome.tabs.sendRequest(currWindow.tabs[j].id, 
-					{"type": "update settings", 
-						"tempVals": {"globalAllowAll": urlsGloballyAllowed, "tempAllowList": tempAllowList},
-						"whitelist": whitelist, 
-						"reload": shouldReload
-					});							
+				chrome.tabs.sendRequest(currWindow.tabs[j].id, newSettings);							
 			}		
 		}
 	});
 }
 
+function resetSiteStorage(currTabId)
+{
+	var newSettings = generateAllSettings();
+	newSettings.type = "reset all storage";
+	newSettings.reload = true;
+	chrome.tabs.sendRequest(currTabId, newSettings);
+}
+
 /*
 Generates a json object with all the applicable settings for a website of "url".
 */
-function generateAllSettings(url, topWindowUrl)
-{
-	return {"tempVals": {"globalAllowAll": sessionConfig.get("globalAllowAll"), "tempAllowList": tempAllowList},
-			"whitelist": whitelist,
-			"reload": config.get('reloadCurrentTabOnToggle')};			
+function generateAllSettings()
+{		
+	var tempAllowListHash = sessionConfig.get("tempAllowListHash");
+	return {"type": "update settings",	
+			"whitelist": {"whitelist": whitelist, "whitelistHash": config.get("whitelistHash"), 
+				"globalAllowAll": sessionConfig.get("globalAllowAll"), 
+				"tempAllowList": tempAllowList, "tempAllowListHash": tempAllowListHash,
+				"tempExpiry": (tempAllowListHash === EMPTY_MD5 ? 0 : (new Date()).getTime() + 1000 * 3600),	// Expire after 1 hour
+				"blacklist": blacklist, "blacklistHash": config.get("blacklistHash")},
+			"reload": config.get('reloadCurrentTabOnToggle')};	
 }
 
 /*
@@ -71,8 +70,16 @@ chrome.extension.onRequest.addListener(function(msg, src, send) {
 		//console.log("get settings block start src: " + src);
 		// If src is null, we are very likely blocking something inside of another Google Chrome extension.
 		// However, we don't have a good way of showing the whitelister.
-		var theSettings = generateAllSettings(msg.url, null);	//((src && src.tab) ? src.tab.url : "")
+		var theSettings = generateAllSettings();	//msg.url, ((src && src.tab) ? src.tab.url : "")
 		send(theSettings);
+	}
+	else if (msg.type === "get block harmful search")
+	{
+		send({"setting": config.get('hideHarmfulSearches')});
+	}
+	else if (msg.type === "test")
+	{
+		send({"result": true});
 	}	
 	else
 	{

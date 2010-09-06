@@ -18,6 +18,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+NotScripts 0.9.6 September 6th, 2010
+	New: NotScripts can now also block scripts in ftp:// and file:/// (localhost) sites if given permission in the Google Chrome extensions page.
+	New: Added support for blocking old-school frameset/frame elements.
+	New: In the drop down menu, NotScripts now shows a link to each domain's Google Safe Browsing page to help you decide to whitelist it or not.
+		Note that NotScripts only links to the English version of the Google Safe Browsing page at this point. This should change when NotScripts adds additional languages.
+	New: NotScripts now removes the "This site may harm your computer" links from Google Search results. Note: Is not compatible with AutoPagerize type extensions.
+	New: Added memory stats for the lists in the Options page to help users gauge how much of the HTML5 local storage quota they are using.
+	New: NotScripts now supports blocking modes of blacklist and whitelist with top level sites allowed by default.
+	New: A page in the Options page on how to report bugs.
+	Improved: The temp allow this site features now need much fewer reloads when used because of a change in the way temp permissions are stored.
+	Improved: (From Mike) Windows users can now simply copy and paste the folder path shown on the password status page to get
+		to their password file without having to type in their user name.
+	Improved: Lowered the memory usage and improved the start up time of the NotScripts drop down menu by removing unused components from the jquery UI theme library.
+	Improved: Greatly reduced the computing power required for blocking by implementing sorted lists that can be searched with a binary search like algorithm.
+	Improved: Site specific storage for the whitelist is now only overwritten when there is a change made instead of on every page load, thanks to the usage of MD5 hashes.
+	Changed: IPv4 addresses must now be an exact match when comparing a url with one in the whitelist.
+	Changed: The user is now given the option to reset the HTML5 storage of a website when the storage quota is exceeded or the encryption is incorrect, instead of simply trying to reload the web page.
+	Bug Fix: "Allow All Shown" button incorrectly adds a domain to the whitelist even when the domain already exists in the whitelist, leading to duplicate entries.
+	Bug Fix: A fix has been implemented for the "Are you sure you want to leave this page?" pop ups some users have reported seeing when inline script mitigation is on.
+		There is also improved blocking of this pop up implemented.
+	Bug Fix: A few users have reported that they are not able to get the "Allow" button to respond. I have not been able to confirm whether this is an actual bug
+		but the NotScripts "Allow" button now calls the background page to carry out the actions so this may resolve it.
+	Removed: Made a few code changes so that NotScripts no longer requires cross-origin permissions to run in Google Chrome for improved security.
+
 NotScripts 0.9.5 August 24th, 2010
 	Bug Fix: (Reported by Eric) Corrected path for icons some Linux systems were having trouble with.
 	Bug Fix: (Reported by Tim) Corrected parsing of the @ symbol in a url that could have lead to the wrong domain being recognized.
