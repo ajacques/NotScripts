@@ -2,10 +2,11 @@
 	"update_url": "http://clients2.google.com/service/update2/crx",
 
 	"name": "NotScripts",
-	"version": "0.9.6",
+	"version": "0.9.7",
 	"minimum_chrome_version": "5.0",
-	"background_page": "background.html",
+	"background": "background.html",
 	"options_page": "options.html", 
+	"manifest_version": 2,
   
  	"description": "A clever extension that provides a high degree of 'NoScript' like control of javascript, iframes, and plugins on Google Chrome.",
 	"icons": 
